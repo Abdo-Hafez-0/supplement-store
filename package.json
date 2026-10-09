@@ -15,7 +15,9 @@
     "db:migrate:local": "wrangler d1 migrations apply supplement-store-db --local",
     "db:migrate:remote": "wrangler d1 migrations apply supplement-store-db --remote",
     "auth:generate": "npx auth@1.7.7 generate --config auth.cli.ts --adapter drizzle --dialect sqlite --output src/lib/db/auth-schema.ts --yes",
-    "db:seed:local": "tsx scripts/seed.ts"
+    "db:seed:local": "tsx scripts/seed.ts",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.10",
@@ -29,7 +31,7 @@
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
-    "@types/node": "^20",
+    "@types/node": "^24.19.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "drizzle-kit": "^0.31.11",
@@ -38,6 +40,8 @@
     "tailwindcss": "^4",
     "tsx": "^4.23.15",
     "typescript": "^5",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^5.0.3",
     "wrangler": "^4.149.0"
   }
 }
