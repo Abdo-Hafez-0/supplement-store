@@ -19,7 +19,8 @@ export async function getSettings(db: Db): Promise<Settings> {
   return result;
 }
 
-export async function saveSetting<K extends SettingsKey>(db: Db, key: K, value: Settings[K]) {
+/** Validates `value` against the group's schema (throws if invalid) and stores it. */
+export async function saveSetting(db: Db, key: SettingsKey, value: unknown) {
   const data = settingsSchemas[key].parse(value);
   await db
     .insert(settings)

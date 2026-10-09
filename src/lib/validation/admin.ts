@@ -30,13 +30,15 @@ export const optionalDollars = z
   });
 
 /** Whole number from a text input */
-export const intString = (min: number, max: number) =>
-  z
+export const intString = (min: number, max: number) => {
+  const message = max >= Number.MAX_SAFE_INTEGER ? "Enter a whole number" : `Enter a whole number from ${min} to ${max}`;
+  return z
     .string()
     .trim()
-    .regex(/^-?\d+$/, "Enter a whole number")
+    .regex(/^-?\d+$/, message)
     .transform(Number)
-    .pipe(z.number().int().min(min).max(max));
+    .pipe(z.number().int().min(min, message).max(max, message));
+};
 
 /** Empty -> null, otherwise a whole number */
 export const optionalIntString = (min: number, max: number) =>
