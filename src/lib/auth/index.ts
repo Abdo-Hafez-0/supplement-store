@@ -34,9 +34,18 @@ export async function getSession() {
   return getAuth().api.getSession({ headers: requestHeaders });
 }
 
-/** For admin pages: redirects to the login page unless there is a session. */
+/**
+ * For admin pages and server actions: redirects to the login page unless there is a
+ * session. Server actions are public endpoints, so every admin action calls this first.
+ */
 export async function requireAdmin() {
   const session = await getSession();
   if (!session) redirect("/admin/login");
   return session;
+}
+
+/** For admin route handlers: a 401 response when there is no session, otherwise null. */
+export async function adminApiGuard(): Promise<Response | null> {
+  const session = await getSession();
+  return session ? null : Response.json({ error: "Unauthorized" }, { status: 401 });
 }
