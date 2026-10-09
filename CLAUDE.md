@@ -27,13 +27,25 @@ remembered APIs or version numbers.
 
 ## Commands
 
-<!-- Fill in during M0 once the project exists. -->
-- `npm run dev` — local Next.js dev server
-- `npm run preview` — build and run in the Workers runtime locally
+- `npm run dev` — local Next.js dev server (http://localhost:3000), with D1/R2 bindings
+- `npm run preview` — build and run in the Workers runtime locally (http://localhost:8787).
+  Stop it before building again: on Windows a running preview locks `.open-next`.
 - `npm run deploy` — build and deploy to Cloudflare
-- `npm run db:generate` — generate a Drizzle migration from the schema
-- `npm run db:migrate:local` / `npm run db:migrate:remote` — apply migrations to D1
-- `npm run test` — Vitest
+- `npm run lint` — ESLint
+- `npm run test` — Vitest, single run (`npm run test:watch` to watch)
+- `npm run db:generate` — generate a Drizzle migration from `src/lib/db/schema.ts`
+- `npm run db:migrate:local` / `npm run db:migrate:remote` — apply migrations to D1 (wrangler)
+- `npm run db:seed:local` — insert labelled sample data into the local D1 (never remote)
+- `npm run auth:generate` — regenerate Better Auth tables into `src/lib/db/auth-schema.ts`
+  (then `db:generate`)
+- `npm run admin:bootstrap -- <site URL>` — create the first admin from `ADMIN_EMAIL` /
+  `ADMIN_PASSWORD` (prompts for the password; only works while no users exist)
+- `npm run cf-typegen` — regenerate `cloudflare-env.d.ts` after changing `wrangler.jsonc`
+  or `.dev.vars`
+
+Version pins: `next` is pinned to 16.3.8 because `@opennextjs/cloudflare` 1.20.10 crashes
+on Next 16.4 (opennextjs-cloudflare#1355). Drizzle is on the stable 0.45 / kit 0.31 line,
+whose flat `.sql` migrations wrangler applies directly.
 
 ## Project structure
 
