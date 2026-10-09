@@ -1,6 +1,7 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "main": ".open-next/worker.js",
+  // Custom entry: serves /media/* from R2, everything else via the OpenNext handler
+  "main": "custom-worker.ts",
   "name": "supplement-store",
   "compatibility_date": "2026-09-01",
   "compatibility_flags": [
