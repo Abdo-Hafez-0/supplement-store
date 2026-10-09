@@ -15,6 +15,20 @@
       "when": 1791576224302,
       "tag": "0001_silent_puck",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1791578843799,
+      "tag": "0002_familiar_mathemanic",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1791578901602,
+      "tag": "0003_uneven_silverclaw",
+      "breakpoints": true
     }
   ]
 }

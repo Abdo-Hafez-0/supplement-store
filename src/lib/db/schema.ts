@@ -25,32 +25,36 @@ const timestamps = {
 // Catalog
 // ---------------------------------------------------------------------------
 
-/** Every sellable item, including gift products (a gift bought alone pays full price). */
+export const productStatuses = ["draft", "active", "unlisted"] as const;
+export type ProductStatus = (typeof productStatuses)[number];
+
+/**
+ * Every sellable item. A gift is just another product (bought alone it pays full price).
+ * status: draft = hidden and not purchasable; active = listed and purchasable;
+ * unlisted = purchasable and usable as a gift or bump, but not shown in the listing.
+ */
 export const products = sqliteTable(
   "products",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
     slug: text("slug").notNull(),
-    name: text("name").notNull(),
+    title: text("title").notNull(),
     shortDescription: text("short_description").notNull().default(""),
     description: text("description").notNull().default(""),
+    /** Struck-through price; also the price when the product has no tiers. */
     regularPriceCents: integer("regular_price_cents").notNull(),
-    compareAtPriceCents: integer("compare_at_price_cents"),
     stock: integer("stock").notNull().default(0),
-    isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-    /** Shown in the storefront listing. Gift-only products can be hidden. */
-    isListed: integer("is_listed", { mode: "boolean" }).notNull().default(true),
+    status: text("status", { enum: productStatuses }).notNull().default("draft"),
+    isFeatured: integer("is_featured", { mode: "boolean" }).notNull().default(false),
+    /** Ordered R2 object keys; the first is the main image. */
+    images: text("images", { mode: "json" }).$type<string[]>().notNull().default(sql`'[]'`),
     sortOrder: integer("sort_order").notNull().default(0),
-    /** R2 object keys */
-    imageKey: text("image_key"),
-    videoKey: text("video_key"),
-    bannerText: text("banner_text"),
     ...timestamps,
   },
   (t) => [uniqueIndex("products_slug_unique").on(t.slug)],
 );
 
-/** Quantity tiers ("buy 2 bottles at $X each"). Price is per bottle, so any quantity prices exactly. */
+/** Quantity tiers ("3 bottles for $99"). A product with no tiers sells at its regular price. */
 export const productTiers = sqliteTable(
   "product_tiers",
   {
@@ -59,8 +63,9 @@ export const productTiers = sqliteTable(
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
     bottles: integer("bottles").notNull(),
-    unitPriceCents: integer("unit_price_cents").notNull(),
-    label: text("label"),
+    /** Price for all `bottles` together */
+    bundlePriceCents: integer("bundle_price_cents").notNull(),
+    badgeLabel: text("badge_label"),
     isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
     sortOrder: integer("sort_order").notNull().default(0),
     ...timestamps,
@@ -83,26 +88,30 @@ export const tierGifts = sqliteTable(
       onDelete: "set null",
     }),
     /** null = default of (bottles - 1) */
-    quantityOverride: integer("quantity_override"),
-    giftText: text("gift_text"),
+    giftQty: integer("gift_qty"),
     ...timestamps,
   },
   (t) => [uniqueIndex("tier_gifts_tier_unique").on(t.tierId)],
 );
 
-/** Checkout add-on offer. */
-export const orderBumps = sqliteTable("order_bumps", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  productId: integer("product_id")
-    .notNull()
-    .references(() => products.id, { onDelete: "cascade" }),
-  headline: text("headline").notNull(),
-  description: text("description").notNull().default(""),
-  priceCents: integer("price_cents").notNull(),
-  isActive: integer("is_active", { mode: "boolean" }).notNull().default(true),
-  sortOrder: integer("sort_order").notNull().default(0),
-  ...timestamps,
-});
+/** Checkbox offer at checkout, shown when `productId` is in the cart. One bump per product. */
+export const orderBumps = sqliteTable(
+  "order_bumps",
+  {
+    id: integer("id").primaryKey({ autoIncrement: true }),
+    productId: integer("product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    bumpProductId: integer("bump_product_id")
+      .notNull()
+      .references(() => products.id, { onDelete: "cascade" }),
+    /** Single item at this price; no tiers or gifts */
+    bumpPriceCents: integer("bump_price_cents").notNull(),
+    headline: text("headline").notNull(),
+    ...timestamps,
+  },
+  (t) => [uniqueIndex("order_bumps_product_unique").on(t.productId)],
+);
 
 export const reviewImages = sqliteTable(
   "review_images",
@@ -111,7 +120,7 @@ export const reviewImages = sqliteTable(
     productId: integer("product_id")
       .notNull()
       .references(() => products.id, { onDelete: "cascade" }),
-    imageKey: text("image_key").notNull(),
+    fileKey: text("file_key").notNull(),
     alt: text("alt").notNull().default(""),
     sortOrder: integer("sort_order").notNull().default(0),
     ...timestamps,
@@ -122,7 +131,7 @@ export const reviewImages = sqliteTable(
 export const shippingMethods = sqliteTable("shipping_methods", {
   id: integer("id").primaryKey({ autoIncrement: true }),
   name: text("name").notNull(),
-  description: text("description").notNull().default(""),
+  deliveryText: text("delivery_text").notNull().default(""),
   priceCents: integer("price_cents").notNull(),
   /** Free when the subtotal reaches this amount; null = never */
   freeOverCents: integer("free_over_cents"),

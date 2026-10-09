@@ -46,70 +46,72 @@ async function main() {
       .values([
         {
           slug: "sample-shaker-bottle",
-          name: `${SAMPLE} Shaker Bottle`,
+          title: `${SAMPLE} Shaker Bottle`,
           shortDescription: "Sample gift product.",
           regularPriceCents: 1299,
           stock: 50,
-          isListed: false,
+          status: "unlisted",
           sortOrder: 90,
         },
         {
           slug: "sample-pill-organizer",
-          name: `${SAMPLE} Pill Organizer`,
+          title: `${SAMPLE} Pill Organizer`,
           shortDescription: "Sample substitute gift, used when the shaker is out of stock.",
           regularPriceCents: 999,
           stock: 50,
-          isListed: false,
+          status: "unlisted",
           sortOrder: 91,
         },
       ])
       .returning();
 
+    // Regular price is the struck-through price; tiers are bundle prices.
     const mainProducts = await db
       .insert(products)
       .values([
         {
           slug: "sample-daily-multivitamin",
-          name: `${SAMPLE} Daily Multivitamin`,
+          title: `${SAMPLE} Daily Multivitamin`,
           shortDescription: "Sample product for the prototype. Not a real item.",
           description: "Sample description. Replace with real product copy in the admin.",
-          regularPriceCents: 3999,
-          compareAtPriceCents: 4999,
+          regularPriceCents: 4999,
           stock: 100,
+          status: "active",
+          isFeatured: true,
           sortOrder: 1,
-          bannerText: "Sample banner: free gift with 2+ bottles",
         },
         {
           slug: "sample-magnesium-sleep",
-          name: `${SAMPLE} Magnesium Sleep Support`,
+          title: `${SAMPLE} Magnesium Sleep Support`,
           shortDescription: "Sample product for the prototype. Not a real item.",
           description: "Sample description. Replace with real product copy in the admin.",
-          regularPriceCents: 3499,
+          regularPriceCents: 4499,
           stock: 100,
+          status: "active",
           sortOrder: 2,
         },
       ])
       .returning();
 
     for (const product of mainProducts) {
-      const base = product.regularPriceCents;
+      const one = product.regularPriceCents - 1000;
       const tiers = await db
         .insert(productTiers)
         .values([
-          { productId: product.id, bottles: 1, unitPriceCents: base, sortOrder: 1 },
+          { productId: product.id, bottles: 1, bundlePriceCents: one, sortOrder: 1 },
           {
             productId: product.id,
             bottles: 2,
-            unitPriceCents: base - 500,
-            label: "Popular",
+            bundlePriceCents: one * 2 - 1000,
+            badgeLabel: "Popular",
             isDefault: true,
             sortOrder: 2,
           },
           {
             productId: product.id,
             bottles: 3,
-            unitPriceCents: base - 1000,
-            label: "Best value",
+            bundlePriceCents: one * 3 - 2500,
+            badgeLabel: "Best value",
             sortOrder: 3,
           },
         ])
@@ -124,21 +126,21 @@ async function main() {
             tierId: tier.id,
             giftProductId: shaker.id,
             substituteProductId: organizer.id,
-            giftText: `${SAMPLE} Free shaker bottle`,
           })),
       );
-    }
 
-    await db.insert(orderBumps).values({
-      productId: organizer.id,
-      headline: `${SAMPLE} Add a pill organizer for $4.99`,
-      description: "Sample order bump shown at checkout.",
-      priceCents: 499,
-    });
+      // Each product offers the pill organizer as its checkout bump.
+      await db.insert(orderBumps).values({
+        productId: product.id,
+        bumpProductId: organizer.id,
+        bumpPriceCents: 499,
+        headline: `${SAMPLE} Add a pill organizer for $4.99`,
+      });
+    }
 
     await db.insert(shippingMethods).values({
       name: `${SAMPLE} Free shipping`,
-      description: "Sample free shipping method, 5-7 business days.",
+      deliveryText: "Sample: arrives in 5-7 business days",
       priceCents: 0,
       sortOrder: 1,
     });
