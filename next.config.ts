@@ -1,7 +1,6 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
   turbopack: {
     rules: {
       "*.css": {
@@ -13,3 +12,7 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+
+// Makes Cloudflare bindings (D1, R2, env) available to `next dev`.
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
+initOpenNextCloudflareForDev();

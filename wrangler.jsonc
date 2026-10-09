@@ -1,0 +1,30 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "main": ".open-next/worker.js",
+  "name": "supplement-store",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": [
+    // Enable Node.js APIs
+    "nodejs_compat",
+    // Allow fetch() to public URLs only
+    "global_fetch_strictly_public",
+  ],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS",
+  },
+  "services": [
+    {
+      "binding": "WORKER_SELF_REFERENCE",
+      // Must match "name" above
+      "service": "supplement-store",
+    },
+  ],
+  "images": {
+    // Image optimization for next/image
+    "binding": "IMAGES",
+  },
+  "observability": {
+    "enabled": true,
+  },
+}
