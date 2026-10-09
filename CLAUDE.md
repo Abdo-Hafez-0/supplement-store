@@ -53,8 +53,9 @@ whose flat `.sql` migrations wrangler applies directly.
 src/
   app/
     (store)/          storefront routes: home, products, product page, cart, checkout, order confirmation
-    admin/            admin dashboard (protected)
-    api/              route handlers: cart, checkout, PayPal webhook, auth
+    admin/            admin dashboard: login/ is public, (dashboard)/ checks the session
+    api/              route handlers: cart, checkout, PayPal webhook, auth, admin uploads
+    media/            /media/* fallback route for `next dev` (production uses custom-worker.ts)
   lib/
     db/               Drizzle schema, client, queries
     pricing/          the pricing engine (pure functions, fully unit-tested)
@@ -62,11 +63,16 @@ src/
     email/            Resend client and React Email templates
     auth/             Better Auth setup
     validation/       Zod schemas
+    money/            cents <-> dollar-string helpers (no floats)
+    media/            R2 upload rules, file sniffing, serveMedia()
+    settings/         typed settings groups (storefront, timer, video, chat, limits)
   components/
     store/            storefront components
     admin/            admin components
     ui/               shared primitives that read design tokens
 drizzle/              generated migrations (committed)
+custom-worker.ts      Worker entry: serves /media/* from R2, everything else via OpenNext
+scripts/              local seed, admin bootstrap
 ```
 
 ## Data model (summary)
@@ -74,7 +80,19 @@ drizzle/              generated migrations (committed)
 `products`, `product_tiers`, `tier_gifts` (gift + substitute per tier), `order_bumps`,
 `review_images`, `shipping_methods`, `settings` (key + JSON value), `carts`, `cart_items`
 (`is_gift`, `parent_item_id`), `orders`, `order_items` (price snapshot, `is_gift`), plus
-Better Auth's tables. The full table list is in the production plan doc.
+Better Auth's tables (incl. `rate_limit`). The full table list is in the production plan doc
+(`WooCommerce Store — Production Plan.md`), including the open questions and their defaults.
+
+- `products.status`: `draft` (hidden, not purchasable), `active` (listed), `unlisted`
+  (purchasable and usable as a gift or bump, not listed). `regular_price_cents` is the
+  struck-through price and the price when a product has no tiers. `images` is an ordered
+  JSON array of R2 keys.
+- `product_tiers.bundle_price_cents` is the price for all `bottles` together.
+- `tier_gifts.gift_qty` null means the default of bottles − 1.
+- `order_bumps`: one per product (`product_id` → `bump_product_id` at `bump_price_cents`).
+- Migrations: `drizzle-kit generate` prompts on column renames, which needs a TTY. Split a
+  rename into a drop pass and an add pass, and review the SQL (SQLite cannot `ADD` a
+  `NOT NULL` column without a default).
 
 ## Rules that must never be broken
 

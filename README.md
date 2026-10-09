@@ -50,6 +50,12 @@ is not guaranteed; WSL is the fallback if builds misbehave.
    npm run test
    ```
 
+## Admin
+
+Sign in at `/admin`. Products (with tiers, gifts, order bump, images and review images),
+shipping methods and settings are managed there. Files upload to R2 in 10 MB chunks and are
+served from `/media/...`. Login is limited to 5 attempts per IP per 5 minutes.
+
 ## Deploying
 
 Pushes to `main` deploy automatically through Cloudflare Workers Builds (deploy command
