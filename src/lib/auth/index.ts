@@ -29,7 +29,9 @@ export const getAuth = cache(createAuth);
 
 /** The current admin session, or null. Always checked on the server. */
 export async function getSession() {
-  return getAuth().api.getSession({ headers: await headers() });
+  // Read headers first: it marks the route dynamic before the Cloudflare context is touched.
+  const requestHeaders = await headers();
+  return getAuth().api.getSession({ headers: requestHeaders });
 }
 
 /** For admin pages: redirects to the login page unless there is a session. */
