@@ -52,6 +52,12 @@ is not guaranteed; WSL is the fallback if builds misbehave.
 
 ## Deploying
 
+Pushes to `main` deploy automatically through Cloudflare Workers Builds (deploy command
+`npm run deploy`). Migrations are not applied by the build: run
+`npm run db:migrate:remote` before pushing a change that adds one.
+
+Manual deploy from your machine:
+
 ```bash
 npm run db:migrate:remote
 npm run deploy
