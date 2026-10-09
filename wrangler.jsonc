@@ -20,6 +20,22 @@
       "service": "supplement-store",
     },
   ],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "supplement-store-db",
+      "database_id": "e1253631-72d3-4a14-8e11-4289671e40aa",
+      // Drizzle Kit writes migrations here; wrangler applies them
+      "migrations_dir": "drizzle",
+    },
+  ],
+  "r2_buckets": [
+    {
+      // Product images, review images, how-to video
+      "binding": "MEDIA",
+      "bucket_name": "supplement-store-media",
+    },
+  ],
   "images": {
     // Image optimization for next/image
     "binding": "IMAGES",
