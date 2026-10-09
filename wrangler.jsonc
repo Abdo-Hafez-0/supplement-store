@@ -40,6 +40,11 @@
     // Image optimization for next/image
     "binding": "IMAGES",
   },
+  // Non-secret config. Local values in .dev.vars override these.
+  // Secrets (BETTER_AUTH_SECRET, ADMIN_EMAIL, ADMIN_PASSWORD) go in via `wrangler secret put`.
+  "vars": {
+    "BETTER_AUTH_URL": "https://supplement-store.abdohafez731.workers.dev",
+  },
   "observability": {
     "enabled": true,
   },

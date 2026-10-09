@@ -17,7 +17,8 @@
     "auth:generate": "npx auth@1.7.7 generate --config auth.cli.ts --adapter drizzle --dialect sqlite --output src/lib/db/auth-schema.ts --yes",
     "db:seed:local": "tsx scripts/seed.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "admin:bootstrap": "tsx scripts/bootstrap-admin.ts"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.10",
