@@ -118,3 +118,13 @@ Better Auth's tables. The full table list is in the production plan doc.
 - [ ] M3 Cart — pricing engine, server cart, gift sync, slide-out drawer
 - [ ] M4 Checkout and orders — checkout, order bump, PayPal sandbox, webhook, orders, stock, emails
 - [ ] M5 Finish — Meta Pixel + CAPI, chat loader, speed pass, full test run
+
+<!-- BEGIN:nextjs-agent-rules -->
+
+# This is NOT the Next.js you know
+
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
+<!-- END:nextjs-agent-rules -->

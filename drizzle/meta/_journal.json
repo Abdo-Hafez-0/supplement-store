@@ -8,6 +8,13 @@
       "when": 1791575860459,
       "tag": "0000_square_talon",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791576224302,
+      "tag": "0001_silent_puck",
+      "breakpoints": true
     }
   ]
 }

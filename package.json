@@ -13,14 +13,18 @@
     "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate:local": "wrangler d1 migrations apply supplement-store-db --local",
-    "db:migrate:remote": "wrangler d1 migrations apply supplement-store-db --remote"
+    "db:migrate:remote": "wrangler d1 migrations apply supplement-store-db --remote",
+    "auth:generate": "npx auth@1.7.7 generate --config auth.cli.ts --adapter drizzle --dialect sqlite --output src/lib/db/auth-schema.ts --yes"
   },
   "dependencies": {
     "@opennextjs/cloudflare": "^1.20.10",
+    "better-auth": "^1.7.7",
     "drizzle-orm": "^0.45.4",
     "next": "16.3.8",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",

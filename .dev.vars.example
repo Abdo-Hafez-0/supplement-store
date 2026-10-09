@@ -1,1 +1,7 @@
 NEXTJS_ENV=development
+# openssl rand -base64 32
+BETTER_AUTH_SECRET=
+BETTER_AUTH_URL=http://localhost:3000
+ADMIN_EMAIL=admin@example.test
+# at least 12 characters
+ADMIN_PASSWORD=
