@@ -8,12 +8,16 @@ export function SubmitButton({
   children,
   pendingText = "Saving…",
   variant,
+  pending: pendingProp,
 }: {
   children: React.ReactNode;
   pendingText?: string;
   variant?: ButtonVariant;
+  /** From useFormAction; useFormStatus only sees `<form action>` submissions. */
+  pending?: boolean;
 }) {
-  const { pending } = useFormStatus();
+  const status = useFormStatus();
+  const pending = pendingProp ?? status.pending;
   return (
     <Button type="submit" disabled={pending} variant={variant}>
       {pending ? pendingText : children}

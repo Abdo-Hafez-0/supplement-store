@@ -1,8 +1,9 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useState } from "react";
 import { FileUploadButton } from "@/components/admin/file-upload-button";
-import { idle, type FormState } from "@/components/admin/form-state";
+import type { FormState } from "@/components/admin/form-state";
+import { useFormAction } from "@/components/admin/use-form-action";
 import { fieldError, FormMessage, SubmitButton } from "@/components/admin/form-status";
 import { MediaThumb } from "@/components/admin/media-thumb";
 import { statusHints, statusLabels } from "@/components/admin/status-badge";
@@ -57,7 +58,7 @@ export function ProductForm({
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
   isNew: boolean;
 }) {
-  const [state, formAction] = useActionState(action, idle);
+  const { state, onSubmit, pending } = useFormAction(action);
   const [slug, setSlug] = useState(initial.slug);
   const [slugTouched, setSlugTouched] = useState(!isNew);
   const [status, setStatus] = useState(initial.status);
@@ -74,7 +75,7 @@ export function ProductForm({
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-5">
+    <form onSubmit={onSubmit} className="flex flex-col gap-5">
       <div className="grid gap-4 md:grid-cols-2">
         <Field label="Title" htmlFor="title" error={error("title")}>
           <Input
@@ -201,7 +202,7 @@ export function ProductForm({
       </fieldset>
 
       <div className="flex flex-wrap items-center gap-4">
-        <SubmitButton>{isNew ? "Create product" : "Save product"}</SubmitButton>
+        <SubmitButton pending={pending}>{isNew ? "Create product" : "Save product"}</SubmitButton>
         <FormMessage state={state} />
       </div>
     </form>

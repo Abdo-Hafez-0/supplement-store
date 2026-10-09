@@ -1,7 +1,8 @@
 "use client";
 
-import { useActionState, useState } from "react";
-import { idle, type FormState } from "@/components/admin/form-state";
+import { useState } from "react";
+import type { FormState } from "@/components/admin/form-state";
+import { useFormAction } from "@/components/admin/use-form-action";
 import { FormMessage, SubmitButton } from "@/components/admin/form-status";
 import { Button } from "@/components/ui/button";
 import { Checkbox, Field, Input, Select } from "@/components/ui/field";
@@ -41,7 +42,7 @@ export function TierEditor({
   productOptions: ProductOption[];
   action: (prev: FormState, formData: FormData) => Promise<FormState>;
 }) {
-  const [state, formAction] = useActionState(action, idle);
+  const { state, onSubmit, pending } = useFormAction(action);
   const [rows, setRows] = useState(initial);
 
   const update = (rowId: string, patch: Partial<TierRow>) =>
@@ -81,7 +82,7 @@ export function TierEditor({
   );
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form onSubmit={onSubmit} className="flex flex-col gap-4">
       <input type="hidden" name="tiers" value={JSON.stringify(toPayload(rows))} />
 
       {rows.length === 0 && (
@@ -204,7 +205,7 @@ export function TierEditor({
         <Button variant="secondary" onClick={addTier} disabled={rows.length >= 10}>
           Add tier
         </Button>
-        <SubmitButton>Save tiers</SubmitButton>
+        <SubmitButton pending={pending}>Save tiers</SubmitButton>
         <FormMessage state={state} />
       </div>
     </form>
