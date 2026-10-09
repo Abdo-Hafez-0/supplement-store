@@ -124,7 +124,7 @@ Better Auth's tables. The full table list is in the production plan doc.
 
 ## Milestones
 
-- [ ] M0 Setup — repo, Next.js, Tailwind, D1 + Drizzle, R2, Better Auth, deploy to workers.dev
+- [x] M0 Setup — repo, Next.js, Tailwind, D1 + Drizzle, R2, Better Auth, deploy to workers.dev
 - [ ] M1 Admin — login, products with tiers/gifts/bump/images, settings, shipping methods
 - [ ] M2 Storefront — home, listing, product page (tiers, banner, gift preview, timer, video, reviews)
 - [ ] M3 Cart — pricing engine, server cart, gift sync, slide-out drawer
