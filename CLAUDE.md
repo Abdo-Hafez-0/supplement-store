@@ -58,7 +58,8 @@ src/
     media/            /media/* fallback route for `next dev` (production uses custom-worker.ts)
   lib/
     db/               Drizzle schema, client, queries
-    pricing/          the pricing engine (pure functions, fully unit-tested)
+    pricing/          the pricing engine: priceCart() and tier/gift helpers (pure, fully unit-tested)
+    cart/             server cart: cookie, catalog loading, re-pricing and gift-line sync
     paypal/           PayPal server client: create order, capture, verify webhook
     email/            Resend client and React Email templates
     auth/             Better Auth setup
@@ -136,7 +137,16 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
   (default; may change — see open questions in the plan). The per-bottle price is
   `bundle_price_cents / bottles` rounded to the nearest cent (half up), then × quantity
   (decided with the developer, 2026-10-11).
-- The engine is a set of pure functions with unit tests for every rule above.
+- A quantity between two tiers uses the lower tier's per-bottle price; its gift rule applies
+  with gifts = override or qty - 1.
+- While the visitor's offer timer has expired, lines are priced at the regular price; gifts
+  still apply.
+- Stock is shared across the cart in line order: paid lines first, then gifts. A gift needs
+  stock for its whole quantity, otherwise the substitute (also needing full stock), else none.
+- Unavailable (draft/deleted/out-of-stock) lines are removed; quantities are lowered to stock
+  and to the settings cap. The stored cart (incl. gift rows) is rewritten to match.
+- The engine is a set of pure functions with unit tests for every rule above
+  (`src/lib/pricing/cart.test.ts`).
 
 ## Working agreements
 
