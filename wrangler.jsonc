@@ -34,7 +34,7 @@
     {
       // Product images, review images, how-to video
       "binding": "MEDIA",
-      "bucket_name": "supplement-store-media",
+      "bucket_name": "supplement-store-media-us",
     },
   ],
   "images": {
