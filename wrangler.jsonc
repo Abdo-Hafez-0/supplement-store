@@ -24,8 +24,8 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "supplement-store-db",
-      "database_id": "e1253631-72d3-4a14-8e11-4289671e40aa",
+      "database_name": "supplement-store-db-us",
+      "database_id": "b2b57562-e14a-4b41-92f8-b3d31128c566",
       // Drizzle Kit writes migrations here; wrangler applies them
       "migrations_dir": "drizzle",
     },
