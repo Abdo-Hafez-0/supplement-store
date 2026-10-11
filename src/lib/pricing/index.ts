@@ -1,4 +1,7 @@
-// Pricing engine: pure functions over integer cents. Implemented in M3.
+// Pricing engine: pure functions over integer cents. The cart engine lands in M3.
+
+export * from "./gifts";
+export * from "./tiers";
 
 /** Line total in integer cents. Rejects non-integer inputs instead of rounding. */
 export function lineTotalCents(unitPriceCents: number, quantity: number): number {
