@@ -127,7 +127,9 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
 - If a gift is out of stock, use its substitute; if both are out, no gift and the gift
   text is hidden.
 - Quantities above the top tier: top tier's per-bottle price × quantity, gifts = qty - 1
-  (default; may change — see open questions in the plan).
+  (default; may change — see open questions in the plan). The per-bottle price is
+  `bundle_price_cents / bottles` rounded to the nearest cent (half up), then × quantity
+  (decided with the developer, 2026-10-11).
 - The engine is a set of pure functions with unit tests for every rule above.
 
 ## Working agreements
@@ -139,11 +141,14 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
   default, and note the assumption in the milestone summary.
 - Stop and ask before anything that needs the developer's accounts or money: Cloudflare,
   GitHub, PayPal, Resend, Meta, or a paid plan.
+- Stay on the Cloudflare free plan as long as possible (10 ms CPU per request nominal limit,
+  3 MB compressed Worker). Keep per-request CPU low: cache what can be cached, avoid heavy
+  libraries and work that repeats on every request.
 
 ## Milestones
 
 - [x] M0 Setup — repo, Next.js, Tailwind, D1 + Drizzle, R2, Better Auth, deploy to workers.dev
-- [ ] M1 Admin — login, products with tiers/gifts/bump/images, settings, shipping methods
+- [x] M1 Admin — login, products with tiers/gifts/bump/images, settings, shipping methods
 - [ ] M2 Storefront — home, listing, product page (tiers, banner, gift preview, timer, video, reviews)
 - [ ] M3 Cart — pricing engine, server cart, gift sync, slide-out drawer
 - [ ] M4 Checkout and orders — checkout, order bump, PayPal sandbox, webhook, orders, stock, emails
