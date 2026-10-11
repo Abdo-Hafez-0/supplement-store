@@ -65,7 +65,8 @@ src/
     validation/       Zod schemas
     money/            cents <-> dollar-string helpers (no floats)
     media/            R2 upload rules, file sniffing, serveMedia()
-    settings/         typed settings groups (storefront, timer, video, chat, limits)
+    settings/         typed settings groups (home, storefront, timer, video, chat, limits)
+    timer/            per-visitor offer countdown (signed cookie) used for display and pricing
   components/
     store/            storefront components
     admin/            admin components
@@ -90,6 +91,11 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
 - `product_tiers.bundle_price_cents` is the price for all `bottles` together.
 - `tier_gifts.gift_qty` null means the default of bottles − 1.
 - `order_bumps`: one per product (`product_id` → `bump_product_id` at `bump_price_cents`).
+- Images: the admin's browser resizes uploads to a full image (max 1600 px) and a
+  `<key>-thumb` (max 480 px) in the same format; the storefront picks one via `srcset`.
+  No server-side image transformation (free plan).
+- Settings rows are JSON validated on read; give any new field a `.default()` so rows saved
+  before it existed still parse (an invalid row falls back to all defaults).
 - Migrations: `drizzle-kit generate` prompts on column renames, which needs a TTY. Split a
   rename into a drop pass and an add pass, and review the SQL (SQLite cannot `ADD` a
   `NOT NULL` column without a default).
