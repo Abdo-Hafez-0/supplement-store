@@ -1,5 +1,6 @@
-// Pricing engine: pure functions over integer cents. The cart engine lands in M3.
+// Pricing engine: pure functions over integer cents (priceCart is the entry point).
 
+export * from "./cart";
 export * from "./gifts";
 export * from "./tiers";
 
