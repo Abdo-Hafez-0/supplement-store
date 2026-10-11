@@ -16,6 +16,8 @@ type CartState = {
   add: (productId: number, quantity: number) => Promise<boolean>;
   setQuantity: (lineId: number, quantity: number) => Promise<void>;
   remove: (lineId: number) => Promise<void>;
+  /** Accept or decline the order bump on offer */
+  setBump: (accept: boolean) => Promise<void>;
   freeShippingText: string;
 };
 
@@ -23,6 +25,8 @@ const CartContext = createContext<CartState | null>(null);
 
 const emptyCart: PricedCart = {
   lines: [],
+  bump: null,
+  staleBumpLineId: null,
   removed: [],
   subtotalCents: 0,
   compareAtTotalCents: 0,
@@ -99,6 +103,9 @@ export function CartProvider({ children, freeShippingText }: { children: ReactNo
       },
       remove: async (lineId) => {
         await run(() => request(`/api/cart/items/${lineId}`, { method: "DELETE" }));
+      },
+      setBump: async (accept) => {
+        await run(() => request("/api/cart/bump", { method: "PUT", body: JSON.stringify({ accept }) }));
       },
       freeShippingText,
     }),

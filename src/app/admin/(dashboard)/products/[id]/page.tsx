@@ -75,7 +75,7 @@ export default async function EditProductPage({ params, searchParams }: PageProp
 
       <Card
         title="Order bump"
-        description="A checkbox offer at checkout when this product is in the cart. If several products in the cart have bumps, the most expensive product's bump is shown."
+        description="A checkbox offer in the cart (and at checkout) when this product is in the cart. If several products in the cart have bumps, the bump of the product with the highest total is shown."
       >
         {others.length === 0 ? (
           <p className="text-sm text-muted">Add another product first; the bump offers a different product.</p>

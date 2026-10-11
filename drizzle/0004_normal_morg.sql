@@ -1,0 +1,1 @@
+ALTER TABLE `cart_items` ADD `is_bump` integer DEFAULT false NOT NULL;

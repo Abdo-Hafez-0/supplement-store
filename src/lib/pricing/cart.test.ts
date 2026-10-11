@@ -189,3 +189,71 @@ describe("priceCart: corrections", () => {
     }
   });
 });
+
+describe("priceCart: order bump", () => {
+  const BUMP = 20;
+  const withBumps = () =>
+    catalog(
+      { ...tiered(1), bump: { bumpProductId: BUMP, bumpPriceCents: 599, headline: "Add a shaker" } },
+      { ...tiered(2), bump: { bumpProductId: ORGANIZER, bumpPriceCents: 499, headline: "Add an organizer" } },
+      product({ id: BUMP, title: "Bump item", status: "unlisted", stock: 10, regularPriceCents: 1299 }),
+    );
+
+  it("offers the bump of the product in the cart, not yet accepted", () => {
+    const cart = priceCart([line(1, 1, 1)], withBumps(), options);
+    expect(cart.bump).toMatchObject({ triggerProductId: 1, productId: BUMP, priceCents: 599, compareAtCents: 1299, accepted: false });
+    expect(cart.subtotalCents).toBe(3999);
+  });
+
+  it("offers the bump of the product with the highest line total", () => {
+    // product 2 x3 = 89.99 beats product 1 x1 = 39.99
+    const cart = priceCart([line(1, 1, 1), line(2, 2, 3)], withBumps(), options);
+    expect(cart.bump).toMatchObject({ triggerProductId: 2, productId: ORGANIZER, priceCents: 499 });
+  });
+
+  it("adds an accepted bump at the bump price: one item, no tiers or gifts", () => {
+    const cart = priceCart([line(1, 1, 1)], withBumps(), { ...options, acceptedBump: { id: 9, productId: BUMP } });
+    expect(cart.bump).toMatchObject({ accepted: true, lineId: 9 });
+    expect(cart.subtotalCents).toBe(3999 + 599);
+    expect(cart.compareAtTotalCents).toBe(4999 + 1299);
+    expect(cart.itemCount).toBe(2);
+    expect(cart.staleBumpLineId).toBeNull();
+  });
+
+  it("drops an accepted bump that no longer applies", () => {
+    // The accepted bump was product 1's; now product 2 leads, offering a different item
+    const cart = priceCart([line(1, 1, 1), line(2, 2, 3)], withBumps(), {
+      ...options,
+      acceptedBump: { id: 9, productId: BUMP },
+    });
+    expect(cart.bump).toMatchObject({ productId: ORGANIZER, accepted: false });
+    expect(cart.staleBumpLineId).toBe(9);
+    expect(cart.subtotalCents).toBe(3999 + 8999);
+  });
+
+  it("drops the bump when its product is removed from the cart", () => {
+    const cart = priceCart([line(2, 3, 1)], withBumps(), { ...options, acceptedBump: { id: 9, productId: BUMP } });
+    expect(cart.bump).toBeNull();
+    expect(cart.staleBumpLineId).toBe(9);
+  });
+
+  it("offers no bump when the offered product is out of stock or a draft", () => {
+    const out = withBumps();
+    out.set(BUMP, product({ id: BUMP, status: "unlisted", stock: 0 }));
+    expect(priceCart([line(1, 1, 1)], out, options).bump).toBeNull();
+    const draft = withBumps();
+    draft.set(BUMP, product({ id: BUMP, status: "draft" }));
+    expect(priceCart([line(1, 1, 1)], draft, options).bump).toBeNull();
+  });
+
+  it("takes the bumped item's stock before gifts", () => {
+    // Organizer is product 2's bump and the substitute gift; 2 left in stock
+    const c = withBumps();
+    c.set(SHAKER, product({ id: SHAKER, status: "unlisted", stock: 0 }));
+    c.set(ORGANIZER, product({ id: ORGANIZER, title: "Organizer", status: "unlisted", stock: 2, regularPriceCents: 999 }));
+    const cart = priceCart([line(1, 2, 3)], c, { ...options, acceptedBump: { id: 9, productId: ORGANIZER } });
+    expect(cart.bump?.accepted).toBe(true);
+    // 2 gifts needed, only 1 organizer left after the bump: no gift
+    expect(cart.lines[0].gift).toBeNull();
+  });
+});

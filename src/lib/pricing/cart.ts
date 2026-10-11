@@ -2,17 +2,25 @@
 // quantities only, never prices) and the catalog as read from the database, and
 // returns every price, gift and correction. Called on every cart change and again
 // at checkout (CLAUDE.md rules 1-3).
+//
+// Order bump: the cart offers one bump at a time, the bump of the product with the
+// highest line total. An accepted bump is 1 x the offered product at the bump price
+// (no tiers, no gifts). If it no longer applies, it is dropped.
 
 import { resolveGift, type GiftCandidate, type GiftRule } from "./gifts";
 import { divideRoundHalfUp, priceForQuantity, tierForQuantity, type TierPrice } from "./tiers";
 
 export type CatalogTier = TierPrice & { gift: GiftRule | null };
 
+export type BumpRule = { bumpProductId: number; bumpPriceCents: number; headline: string };
+
 export type CatalogProduct = GiftCandidate & {
   slug: string;
   regularPriceCents: number;
   images: string[];
   tiers: CatalogTier[];
+  /** This product's order bump (offered when it is in the cart) */
+  bump?: BumpRule | null;
 };
 
 /** A paid line as stored in the cart. Gift lines are never input: the engine derives them. */
@@ -54,8 +62,28 @@ export type PricedLine = {
   issues: LineIssue[];
 };
 
+export type PricedBump = {
+  /** The cart product whose bump this is */
+  triggerProductId: number;
+  productId: number;
+  title: string;
+  slug: string;
+  image: string | null;
+  headline: string;
+  priceCents: number;
+  /** The offered product's regular price (struck through) */
+  compareAtCents: number;
+  accepted: boolean;
+  /** The stored bump line when accepted */
+  lineId: number | null;
+};
+
 export type PricedCart = {
   lines: PricedLine[];
+  /** The order bump on offer (accepted or not), or null */
+  bump: PricedBump | null;
+  /** A stored bump line that no longer applies and must be deleted */
+  staleBumpLineId: number | null;
   /** Lines dropped because the product can't be bought any more */
   removed: { lineId: number; productId: number; title: string | null; reason: RemovedReason }[];
   subtotalCents: number;
@@ -70,6 +98,8 @@ export type PriceCartOptions = {
   offerActive: boolean;
   /** Settings > Cart limits; null = no cap */
   maxQuantityPerLine: number | null;
+  /** The bump line stored in the cart, if the shopper accepted the offer */
+  acceptedBump?: { id: number; productId: number } | null;
 };
 
 const purchasable = (product: CatalogProduct | undefined): product is CatalogProduct =>
@@ -131,6 +161,31 @@ export function priceCart(
     });
   }
 
+  // Order bump, priced before gifts so a gift never takes the bumped bottle.
+  let bump: PricedBump | null = null;
+  const trigger = paid
+    .filter((line) => catalog.get(line.productId)?.bump)
+    .reduce<(typeof paid)[number] | null>((best, line) => (!best || line.lineTotalCents > best.lineTotalCents ? line : best), null);
+  const rule = trigger ? catalog.get(trigger.productId)!.bump! : null;
+  const offered = rule ? catalog.get(rule.bumpProductId) : undefined;
+  if (trigger && rule && purchasable(offered) && stockLeft(offered) >= 1) {
+    const accepted = options.acceptedBump?.productId === offered.id;
+    if (accepted) take(offered.id, stockLeft(offered), 1);
+    bump = {
+      triggerProductId: trigger.productId,
+      productId: offered.id,
+      title: offered.title,
+      slug: offered.slug,
+      image: offered.images[0] ?? null,
+      headline: rule.headline,
+      priceCents: rule.bumpPriceCents,
+      compareAtCents: offered.regularPriceCents,
+      accepted,
+      lineId: accepted ? options.acceptedBump!.id : null,
+    };
+  }
+  const staleBumpLineId = options.acceptedBump && !bump?.accepted ? options.acceptedBump.id : null;
+
   // Gifts: the rule of the tier the real quantity falls in (above the top tier, the
   // top tier's). Each line gets its own gift line, even when the gift is the same
   // product. Gifts still apply while the offer timer has expired.
@@ -156,14 +211,18 @@ export function priceCart(
     };
   });
 
-  const subtotalCents = priced.reduce((sum, line) => sum + line.lineTotalCents, 0);
-  const compareAtTotalCents = priced.reduce((sum, line) => sum + line.compareAtCents, 0);
+  const accepted = bump?.accepted ? bump : null;
+  const subtotalCents = priced.reduce((sum, line) => sum + line.lineTotalCents, 0) + (accepted?.priceCents ?? 0);
+  const compareAtTotalCents =
+    priced.reduce((sum, line) => sum + line.compareAtCents, 0) + (accepted?.compareAtCents ?? 0);
   return {
     lines: priced,
+    bump,
+    staleBumpLineId,
     removed,
     subtotalCents,
     compareAtTotalCents,
     savingsCents: Math.max(0, compareAtTotalCents - subtotalCents),
-    itemCount: priced.reduce((sum, line) => sum + line.quantity + (line.gift?.quantity ?? 0), 0),
+    itemCount: priced.reduce((sum, line) => sum + line.quantity + (line.gift?.quantity ?? 0), 0) + (accepted ? 1 : 0),
   };
 }

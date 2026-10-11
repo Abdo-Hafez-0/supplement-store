@@ -169,6 +169,8 @@ export const cartItems = sqliteTable(
       .references(() => products.id, { onDelete: "cascade" }),
     quantity: integer("quantity").notNull(),
     isGift: integer("is_gift", { mode: "boolean" }).notNull().default(false),
+    /** The accepted order bump: 1 x the offered product at the bump price */
+    isBump: integer("is_bump", { mode: "boolean" }).notNull().default(false),
     /** Gift lines point at the line that earned them and are removed with it. */
     parentItemId: integer("parent_item_id").references((): AnySQLiteColumn => cartItems.id, {
       onDelete: "cascade",

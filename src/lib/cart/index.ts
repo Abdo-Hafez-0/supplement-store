@@ -4,7 +4,7 @@ import { and, asc, eq, inArray } from "drizzle-orm";
 import type { BatchItem } from "drizzle-orm/batch";
 import { cookies } from "next/headers";
 import type { Db } from "@/lib/db/client";
-import { cartItems, carts, products, productTiers, tierGifts } from "@/lib/db/schema";
+import { cartItems, carts, orderBumps, products, productTiers, tierGifts } from "@/lib/db/schema";
 import { priceCart, type CatalogProduct, type PricedCart } from "@/lib/pricing";
 import type { Settings } from "@/lib/settings/schema";
 import { offerActive } from "@/lib/timer";
@@ -44,7 +44,7 @@ export async function ensureCart(db: Db): Promise<string> {
   return id;
 }
 
-/** Products in the cart plus every gift/substitute their tiers can give, as the engine needs them. */
+/** Products in the cart plus every gift, substitute and bump product they can bring, as the engine needs them. */
 export async function loadCatalog(db: Db, productIds: number[]): Promise<Map<number, CatalogProduct>> {
   const catalog = new Map<number, CatalogProduct>();
   if (!productIds.length) return catalog;
@@ -57,6 +57,15 @@ export async function loadCatalog(db: Db, productIds: number[]): Promise<Map<num
   const giftIds = tierRows.flatMap(({ gift }) =>
     gift ? [gift.giftProductId, ...(gift.substituteProductId ? [gift.substituteProductId] : [])] : [],
   );
+  const bumps = await db
+    .select({
+      productId: orderBumps.productId,
+      bumpProductId: orderBumps.bumpProductId,
+      bumpPriceCents: orderBumps.bumpPriceCents,
+      headline: orderBumps.headline,
+    })
+    .from(orderBumps)
+    .where(inArray(orderBumps.productId, productIds));
 
   const rows = await db
     .select({
@@ -69,7 +78,7 @@ export async function loadCatalog(db: Db, productIds: number[]): Promise<Map<num
       images: products.images,
     })
     .from(products)
-    .where(inArray(products.id, [...new Set([...productIds, ...giftIds])]));
+    .where(inArray(products.id, [...new Set([...productIds, ...giftIds, ...bumps.map((b) => b.bumpProductId)])]));
 
   for (const row of rows) {
     const tiers = tierRows
@@ -81,7 +90,14 @@ export async function loadCatalog(db: Db, productIds: number[]): Promise<Map<num
           ? { giftProductId: gift.giftProductId, substituteProductId: gift.substituteProductId, giftQty: gift.giftQty }
           : null,
       }));
-    catalog.set(row.id, { ...row, tiers });
+    const bump = bumps.find((b) => b.productId === row.id);
+    catalog.set(row.id, {
+      ...row,
+      tiers,
+      bump: bump
+        ? { bumpProductId: bump.bumpProductId, bumpPriceCents: bump.bumpPriceCents, headline: bump.headline }
+        : null,
+    });
   }
   return catalog;
 }
@@ -91,6 +107,8 @@ export type CartView = PricedCart & { cartId: string | null };
 const emptyCart = (cartId: string | null): CartView => ({
   cartId,
   lines: [],
+  bump: null,
+  staleBumpLineId: null,
   removed: [],
   subtotalCents: 0,
   compareAtTotalCents: 0,
@@ -112,16 +130,22 @@ export async function getPricedCart(db: Db, cartId: string | null, settings: Set
     .orderBy(asc(cartItems.id));
   if (!rows.length) return emptyCart(cartId);
 
-  const paidRows = rows.filter((row) => !row.isGift);
+  const paidRows = rows.filter((row) => !row.isGift && !row.isBump);
   const giftRows = rows.filter((row) => row.isGift);
+  const [bumpRow, ...extraBumpRows] = rows.filter((row) => row.isBump);
   const catalog = await loadCatalog(db, [...new Set(paidRows.map((row) => row.productId))]);
   const { state } = await getVisitorTimer(settings.timer);
   const cart = priceCart(paidRows, catalog, {
     offerActive: offerActive(state),
     maxQuantityPerLine: settings.limits.maxQuantityPerLine,
+    acceptedBump: bumpRow ? { id: bumpRow.id, productId: bumpRow.productId } : null,
   });
 
   const statements: BatchItem<"sqlite">[] = [];
+  // One bump at a time; drop it when it no longer applies
+  for (const stale of [...extraBumpRows.map((row) => row.id), ...(cart.staleBumpLineId ? [cart.staleBumpLineId] : [])]) {
+    statements.push(db.delete(cartItems).where(eq(cartItems.id, stale)));
+  }
   // Gift rows cascade with their parent line
   for (const removed of cart.removed) statements.push(db.delete(cartItems).where(eq(cartItems.id, removed.lineId)));
   for (const line of cart.lines) {
@@ -158,7 +182,14 @@ export async function addToCart(db: Db, cartId: string, productId: number, quant
   const [existing] = await db
     .select({ id: cartItems.id, quantity: cartItems.quantity })
     .from(cartItems)
-    .where(and(eq(cartItems.cartId, cartId), eq(cartItems.productId, productId), eq(cartItems.isGift, false)));
+    .where(
+      and(
+        eq(cartItems.cartId, cartId),
+        eq(cartItems.productId, productId),
+        eq(cartItems.isGift, false),
+        eq(cartItems.isBump, false),
+      ),
+    );
   if (existing) {
     await db
       .update(cartItems)
@@ -169,14 +200,35 @@ export async function addToCart(db: Db, cartId: string, productId: number, quant
   }
 }
 
-/** Sets a paid line's quantity (0 removes it). Gift lines can't be changed: returns false. */
+/** Sets a paid line's quantity (0 removes it). Gift and bump lines can't be changed: returns false. */
 export async function setLineQuantity(db: Db, cartId: string, lineId: number, quantity: number) {
   const [line] = await db
-    .select({ id: cartItems.id, isGift: cartItems.isGift })
+    .select({ id: cartItems.id, isGift: cartItems.isGift, isBump: cartItems.isBump })
     .from(cartItems)
     .where(and(eq(cartItems.id, lineId), eq(cartItems.cartId, cartId)));
-  if (!line || line.isGift) return false;
+  if (!line || line.isGift || line.isBump) return false;
   if (quantity === 0) await db.delete(cartItems).where(eq(cartItems.id, lineId));
   else await db.update(cartItems).set({ quantity }).where(eq(cartItems.id, lineId));
+  return true;
+}
+
+/**
+ * Accepts or declines the order bump on offer. The browser only says yes or no:
+ * which bump applies and its price always come from the server.
+ * Returns false when accepting but no bump is on offer.
+ */
+export async function setBump(db: Db, cartId: string, accept: boolean, settings: Settings) {
+  const removeBumps = db.delete(cartItems).where(and(eq(cartItems.cartId, cartId), eq(cartItems.isBump, true)));
+  if (!accept) {
+    await removeBumps;
+    return true;
+  }
+  const { bump } = await getPricedCart(db, cartId, settings);
+  if (!bump) return false;
+  if (bump.accepted) return true;
+  await db.batch([
+    removeBumps,
+    db.insert(cartItems).values({ cartId, productId: bump.productId, quantity: 1, isBump: true }),
+  ]);
   return true;
 }

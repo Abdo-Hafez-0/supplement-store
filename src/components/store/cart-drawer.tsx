@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import type { PricedLine } from "@/lib/pricing";
+import type { PricedBump, PricedLine } from "@/lib/pricing";
 import { formatCents } from "@/lib/money";
 import { useCart } from "./cart-context";
 import { ImagePlaceholder, MediaImage } from "./media-image";
@@ -117,6 +117,33 @@ function LineItem({ line }: { line: PricedLine }) {
   );
 }
 
+/** The order bump: one checkbox offer, priced by the server. */
+function BumpOffer({ bump }: { bump: PricedBump }) {
+  const { setBump, pending } = useCart();
+  return (
+    <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-accent bg-surface p-3">
+      <input
+        type="checkbox"
+        checked={bump.accepted}
+        disabled={pending}
+        onChange={(event) => setBump(event.currentTarget.checked)}
+        className="size-5 shrink-0 accent-accent"
+      />
+      <Thumb image={bump.image} alt="" />
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="text-sm font-semibold">{bump.headline}</span>
+        <span className="text-xs text-muted">{bump.title}</span>
+      </span>
+      <span className="flex flex-col items-end">
+        <span className="text-sm font-semibold tabular-nums">{formatCents(bump.priceCents)}</span>
+        {bump.compareAtCents > bump.priceCents && (
+          <s className="text-xs text-muted tabular-nums">{formatCents(bump.compareAtCents)}</s>
+        )}
+      </span>
+    </label>
+  );
+}
+
 export function CartDrawer() {
   const { cart, isOpen, close, pending, error, freeShippingText } = useCart();
   const dialog = useRef<HTMLDialogElement>(null);
@@ -185,6 +212,7 @@ export function CartDrawer() {
 
         {cart && cart.lines.length > 0 && (
           <footer className="flex flex-col gap-3 border-t border-border px-gutter py-4">
+            {cart.bump && <BumpOffer bump={cart.bump} />}
             {freeShippingText && <p className="text-center text-sm text-muted">{freeShippingText}</p>}
             {cart.savingsCents > 0 && (
               <p className="flex justify-between text-sm text-success">

@@ -13,4 +13,6 @@ export const setQuantitySchema = z.strictObject({
   quantity: z.number().int().min(0).max(MAX_LINE_QUANTITY),
 });
 
+export const setBumpSchema = z.strictObject({ accept: z.boolean() });
+
 export const lineIdSchema = z.string().regex(/^\d{1,12}$/).transform(Number).pipe(z.number().int().positive());

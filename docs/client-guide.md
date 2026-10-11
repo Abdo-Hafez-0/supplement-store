@@ -124,9 +124,13 @@ Each product can have one.
 | **Bump price ($)** | The special price for one item. It gets no tiers or gifts. |
 | **Checkbox text** | The text next to the checkbox. |
 
-Select **Save order bump**, or **Remove bump** to delete it. If the cart holds several products
-with bumps, the bump of the most expensive one is shown. *The bump appears to shoppers once
-checkout is added (next update), but you can set it up now.*
+Select **Save order bump**, or **Remove bump** to delete it.
+
+Shoppers see the bump as a **checkbox offer at the bottom of the cart panel** (and later at
+checkout). Ticking it adds one of the offered product at the bump price; unticking removes it.
+Only one bump shows at a time: if the cart holds several products with bumps, the bump of the
+product with the highest total in the cart is shown. If that product leaves the cart, the bump
+goes with it. The offer is hidden while the offered product is out of stock or set to Draft.
 
 ### 3.5 Review images
 
@@ -240,6 +244,7 @@ Adding to cart opens the cart panel from the side, where shoppers can:
 - change quantities with **− / +** (prices and gifts update right away),
 - **Remove** a product (its gift goes with it),
 - see each gift under its product, marked **FREE GIFT**,
+- tick the **order bump** offer to add it (see 3.4),
 - see their savings and subtotal.
 
 If something changes while a product sits in the cart, the cart corrects itself and says
@@ -266,14 +271,17 @@ Use these to see every feature in action. Use a phone for the shopper side.
 7. **Timer:** in **Settings**, turn the timer on with a short length (e.g. 2 minutes), and
    watch it count down on the product page. At zero the tier prices switch to regular
    prices. Set it back to your real length afterwards.
-8. **Banners and FAQ:** fill in the announcement bar, promo banner and a few FAQ questions,
+8. **Order bump:** give your product an order bump (3.4). Add the product to the cart: the
+   offer appears at the bottom of the cart panel. Tick it and the subtotal goes up by the
+   bump price; untick it to remove it.
+9. **Banners and FAQ:** fill in the announcement bar, promo banner and a few FAQ questions,
    and check them on the store.
 
 ---
 
 ## 8. Coming next
 
-- **Checkout and orders:** checkout form, the order bump, payment with card, PayPal,
+- **Checkout and orders:** checkout form, payment with card, PayPal,
   Apple Pay and Google Pay (in test mode first), order confirmation page, stock reduced on
   payment, order emails, and an orders list in the admin.
 - **Finishing:** Meta Pixel tracking, live chat, speed improvements and a full test run.
@@ -285,6 +293,7 @@ Use these to see every feature in action. Use a phone for the shopper side.
 
 | Date | Update | What was added |
 | --- | --- | --- |
+| 2026-10-11 | Order bump in the cart | The order bump now shows as a checkbox offer in the cart panel. |
 | 2026-10-11 | Cart | Add to cart, the cart panel, automatic gifts in the cart, quantity changes with live re-pricing. |
 | 2026-10-11 | Storefront | Home page, product list, product page with tiers, gifts, timer, video and reviews; home page and banner settings; automatic photo resizing. |
 | 2026-10-10 | Admin | Admin login, products with tiers, gifts, order bump and images, shipping methods, settings. |
