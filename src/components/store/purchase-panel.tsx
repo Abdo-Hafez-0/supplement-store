@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useCart } from "./cart-context";
 import { cn } from "@/components/ui/cn";
 import type { StoreTier } from "@/lib/db/queries/storefront";
 import { formatCents } from "@/lib/money";
@@ -11,6 +12,7 @@ import { MediaImage } from "./media-image";
  * Prices shown here are for display only; the server prices the cart (M3).
  */
 export function PurchasePanel({
+  productId,
   tiers,
   regularPriceCents,
   offerActive,
@@ -18,6 +20,7 @@ export function PurchasePanel({
   stock,
   maxQuantity,
 }: {
+  productId: number;
   tiers: StoreTier[];
   regularPriceCents: number;
   /** False while the visitor's offer has expired: regular prices apply */
@@ -32,6 +35,10 @@ export function PurchasePanel({
   const selected = tiers.find((tier) => tier.id === selectedId) ?? null;
   const outOfStock = stock <= 0;
   const quantityCap = Math.max(1, Math.min(stock, maxQuantity ?? 99));
+  const { add, pending, error } = useCart();
+  const [adding, setAdding] = useState(false);
+  // The cart is priced by the server from the real quantity; the card only picks it.
+  const bottles = selected ? selected.bottles : quantity;
 
   return (
     <div className="flex flex-col gap-4">
@@ -155,13 +162,21 @@ export function PurchasePanel({
 
       <button
         type="button"
-        disabled
-        title="The cart arrives in the next update (M3)"
+        disabled={outOfStock || adding || pending || (selected !== null && selected.bottles > stock)}
+        onClick={async () => {
+          setAdding(true);
+          await add(productId, bottles);
+          setAdding(false);
+        }}
         className="rounded-md bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {outOfStock ? "Out of stock" : "Add to cart"}
+        {outOfStock ? "Out of stock" : adding ? "Adding…" : "Add to cart"}
       </button>
-      {!outOfStock && <p className="-mt-2 text-center text-xs text-muted">Prototype: the cart opens in the next milestone.</p>}
+      {error && !adding && (
+        <p role="alert" className="-mt-2 text-center text-sm text-danger">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

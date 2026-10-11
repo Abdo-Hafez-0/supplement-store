@@ -62,6 +62,7 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           <OfferTimer initial={timer} />
 
           <PurchasePanel
+            productId={product.id}
             tiers={tiers}
             regularPriceCents={product.regularPriceCents}
             offerActive={active}

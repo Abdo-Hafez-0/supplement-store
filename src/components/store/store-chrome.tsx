@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Settings } from "@/lib/settings/schema";
+import { CartButton } from "./cart-drawer";
 
 export function AnnouncementBar({ text }: { text: string }) {
   if (!text) return null;
@@ -24,7 +25,7 @@ export function StoreHeader() {
           <Link href="/#faq" className="hover:underline">
             FAQ
           </Link>
-          {/* The cart drawer arrives in M3 */}
+          <CartButton />
         </nav>
       </div>
     </header>
