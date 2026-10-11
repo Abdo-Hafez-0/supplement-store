@@ -8,6 +8,12 @@ export const storefrontTextsSchema = z.strictObject({
   announcementText: z.string().trim().max(200),
   /** Promo banner on the product page */
   promoBannerText: z.string().trim().max(200),
+  /**
+   * Gift line shown after the promo banner, only when the product has a gift
+   * available (plan: if gift and substitute are out, the banner hides the gift text).
+   * Defaulted so rows saved before this field existed still parse.
+   */
+  promoGiftText: z.string().trim().max(120).default(""),
   /** Shown on tier cards that include a gift, e.g. "FREE GIFT" */
   giftBadgeText: z.string().trim().max(40),
   /** Free-shipping callout on the product page and cart */
@@ -95,6 +101,7 @@ export const defaultSettings: Settings = {
   storefront: {
     announcementText: "",
     promoBannerText: "",
+    promoGiftText: "",
     giftBadgeText: "FREE GIFT",
     freeShippingText: "Free shipping on every order",
     trustBadges: [],

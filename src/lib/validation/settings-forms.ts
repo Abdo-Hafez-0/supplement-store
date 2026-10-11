@@ -36,6 +36,7 @@ export const settingsFormSchemas = {
     .strictObject({
       announcementText: text(200),
       promoBannerText: text(200),
+      promoGiftText: text(120),
       giftBadgeText: text(40),
       freeShippingText: text(200),
       trustBadge1: text(60),
@@ -83,6 +84,7 @@ export const settingsFormFields: { [K in SettingsKey]: string[] } = {
   storefront: [
     "announcementText",
     "promoBannerText",
+    "promoGiftText",
     "giftBadgeText",
     "freeShippingText",
     "trustBadge1",

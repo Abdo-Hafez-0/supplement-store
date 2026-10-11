@@ -13,6 +13,7 @@ describe("settings form schemas", () => {
     expect(value).toEqual({
       announcementText: "Summer sale",
       promoBannerText: "",
+      promoGiftText: "",
       giftBadgeText: "",
       freeShippingText: "",
       trustBadges: ["Secure checkout", "Made in the USA"],

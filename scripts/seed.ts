@@ -163,7 +163,8 @@ async function main() {
       },
       storefront: {
         announcementText: `${SAMPLE} Free shipping on every order this week`,
-        promoBannerText: `${SAMPLE} Buy more, save more + free gift`,
+        promoBannerText: `${SAMPLE} Buy more, save more`,
+        promoGiftText: "+ free gift",
         giftBadgeText: "FREE GIFT",
         freeShippingText: "Free shipping on every order",
         trustBadges: ["Secure checkout", "30-day guarantee", "Made in the USA"],

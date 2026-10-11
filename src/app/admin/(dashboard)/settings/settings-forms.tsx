@@ -156,6 +156,14 @@ export function StorefrontTextsForm({ value, action }: { value: Settings["storef
           <Field label="Product page promo banner" htmlFor="promoBannerText" hint="Empty hides it." error={fieldError(state, "promoBannerText")}>
             <Input id="promoBannerText" name="promoBannerText" maxLength={200} defaultValue={value.promoBannerText} />
           </Field>
+          <Field
+            label="Promo banner gift text"
+            htmlFor="promoGiftText"
+            hint='Added after the banner, e.g. "+ free gift". Hidden on products whose gifts are all out of stock.'
+            error={fieldError(state, "promoGiftText")}
+          >
+            <Input id="promoGiftText" name="promoGiftText" maxLength={120} defaultValue={value.promoGiftText} />
+          </Field>
           <div className="grid gap-4 md:grid-cols-2">
             <Field label="Gift badge" htmlFor="giftBadgeText" hint='On tier cards with a gift, e.g. "FREE GIFT". Hidden when no gift is available.' error={fieldError(state, "giftBadgeText")}>
               <Input id="giftBadgeText" name="giftBadgeText" maxLength={40} defaultValue={value.giftBadgeText} />

@@ -20,3 +20,13 @@ describe("settings schemas", () => {
     expect(settingsSchemas.storefront.safeParse(value).success).toBe(false);
   });
 });
+
+describe("settings saved before a field existed", () => {
+  it("still parse, with the new field defaulted", () => {
+    const { promoGiftText: _, ...older } = defaultSettings.storefront;
+    void _;
+    const parsed = settingsSchemas.storefront.safeParse(older);
+    expect(parsed.success).toBe(true);
+    expect(parsed.data?.promoGiftText).toBe("");
+  });
+});
