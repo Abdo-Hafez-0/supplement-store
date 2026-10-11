@@ -23,10 +23,11 @@ export async function uploadFile(
   file: File,
   folder: MediaFolder,
   onProgress?: (fraction: number) => void,
+  variantOf?: string,
 ): Promise<string> {
   const start = await call<StartResponse>(
     "/api/admin/uploads",
-    json({ folder, contentType: file.type, size: file.size }),
+    json({ folder, contentType: file.type, size: file.size, ...(variantOf ? { variantOf } : {}) }),
   );
   const { key, uploadId, partSize, partCount } = start;
   try {
@@ -48,4 +49,20 @@ export async function uploadFile(
     await fetch("/api/admin/uploads/abort", json({ key, uploadId })).catch(() => undefined);
     throw error;
   }
+}
+
+/**
+ * Resizes an image in the browser and uploads the full size and its thumbnail.
+ * Returns the full image's key; the thumbnail key is derived from it (thumbKeyFor).
+ */
+export async function uploadImage(
+  file: File,
+  folder: Exclude<MediaFolder, "video">,
+  onProgress?: (fraction: number) => void,
+): Promise<string> {
+  const { prepareImage } = await import("./image-resize");
+  const { full, thumb } = await prepareImage(file);
+  const key = await uploadFile(full, folder, (fraction) => onProgress?.(fraction * 0.85));
+  await uploadFile(thumb, folder, (fraction) => onProgress?.(0.85 + fraction * 0.15), key);
+  return key;
 }

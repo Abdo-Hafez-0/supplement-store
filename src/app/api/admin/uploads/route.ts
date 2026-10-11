@@ -1,5 +1,5 @@
 import { adminApiGuard } from "@/lib/auth";
-import { extensionFor, folderRules, getMediaBucket, PART_SIZE, partCount } from "@/lib/media";
+import { extensionFor, folderRules, getMediaBucket, PART_SIZE, parseMediaKey, partCount, thumbKeyFor } from "@/lib/media";
 import { startUploadSchema } from "@/lib/validation/uploads";
 
 /**
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const parsed = startUploadSchema.safeParse(await request.json().catch(() => null));
   if (!parsed.success) return Response.json({ error: "Invalid upload request" }, { status: 400 });
 
-  const { folder, contentType, size } = parsed.data;
+  const { folder, contentType, size, variantOf } = parsed.data;
   const rules = folderRules[folder];
   if (!rules.types.includes(contentType)) {
     return Response.json({ error: `Wrong file type. Allowed: ${rules.label}` }, { status: 400 });
@@ -22,7 +22,16 @@ export async function POST(request: Request) {
     return Response.json({ error: `File is too large. Allowed: ${rules.label}` }, { status: 400 });
   }
 
-  const key = `${folder}/${crypto.randomUUID()}.${extensionFor[contentType]}`;
+  let key = `${folder}/${crypto.randomUUID()}.${extensionFor[contentType]}`;
+  if (variantOf) {
+    // Thumbnail of an image uploaded just before: same folder and format, fixed key.
+    const main = parseMediaKey(variantOf);
+    const thumb = thumbKeyFor(variantOf);
+    if (!main || !thumb || main.folder !== folder || main.type !== contentType) {
+      return Response.json({ error: "Invalid thumbnail request" }, { status: 400 });
+    }
+    key = thumb;
+  }
   const upload = await getMediaBucket().createMultipartUpload(key, {
     httpMetadata: {
       contentType,

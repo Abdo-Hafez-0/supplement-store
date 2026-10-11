@@ -1,5 +1,6 @@
 import "server-only";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { thumbKeyFor } from "./rules";
 
 export * from "./rules";
 
@@ -12,9 +13,11 @@ export function mediaUrl(key: string) {
   return `/media/${key}`;
 }
 
-/** Best-effort removal of files no longer referenced. Never fails the caller. */
+/** Best-effort removal of files (and their thumbnails) no longer referenced. Never fails the caller. */
 export async function deleteMedia(keys: (string | null | undefined)[]) {
-  const list = keys.filter((key): key is string => Boolean(key));
+  const list = keys
+    .filter((key): key is string => Boolean(key))
+    .flatMap((key) => [key, thumbKeyFor(key)].filter((k): k is string => Boolean(k)));
   if (!list.length) return;
   try {
     await getMediaBucket().delete(list);

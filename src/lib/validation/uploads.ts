@@ -12,6 +12,8 @@ export const startUploadSchema = z.strictObject({
     .int()
     .positive()
     .max(MAX_PARTS * PART_SIZE),
+  /** Main image key when uploading its thumbnail */
+  variantOf: z.string().regex(MEDIA_KEY).optional(),
 });
 
 const key = z.string().regex(MEDIA_KEY);

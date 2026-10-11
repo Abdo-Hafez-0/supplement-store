@@ -28,16 +28,33 @@ export const folderRules: Record<MediaFolder, { types: MediaType[]; maxBytes: nu
   video: { types: ["video/mp4"], maxBytes: 200 * MiB, label: "MP4, up to 200 MB" },
 };
 
-/** products/<uuid>.webp etc. Only keys of this shape are ever read or written. */
-export const MEDIA_KEY = /^(products|reviews|video)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})\.(jpg|png|webp|mp4)$/;
+/** Longest side of the full image and the thumbnail the admin uploader produces. */
+export const FULL_IMAGE_PX = 1600;
+export const THUMB_IMAGE_PX = 480;
 
-export function parseMediaKey(key: string): { folder: MediaFolder; type: MediaType } | null {
+/**
+ * products/<uuid>.webp etc., and products/<uuid>-thumb.webp for the thumbnail of an
+ * image. Only keys of this shape are ever read or written.
+ */
+export const MEDIA_KEY =
+  /^(products|reviews|video)\/([0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})(-thumb)?\.(jpg|png|webp|mp4)$/;
+
+export function parseMediaKey(key: string): { folder: MediaFolder; type: MediaType; isThumb: boolean } | null {
   const match = MEDIA_KEY.exec(key);
   if (!match) return null;
   const folder = match[1] as MediaFolder;
-  const type = typeForExtension[match[3]];
+  const type = typeForExtension[match[4]];
+  const isThumb = match[3] !== undefined;
   if (!type || !folderRules[folder].types.includes(type)) return null;
-  return { folder, type };
+  if (isThumb && type === "video/mp4") return null;
+  return { folder, type, isThumb };
+}
+
+/** products/<uuid>.webp -> products/<uuid>-thumb.webp (same format). Null for video and thumbs. */
+export function thumbKeyFor(key: string): string | null {
+  const media = parseMediaKey(key);
+  if (!media || media.isThumb || media.type === "video/mp4") return null;
+  return key.replace(/\.(jpg|png|webp)$/, "-thumb.$1");
 }
 
 export function partCount(size: number) {

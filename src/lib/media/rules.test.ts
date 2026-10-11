@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { MiB, PART_SIZE, parseMediaKey, partCount, sniffMediaType } from "@/lib/media/rules";
+import { MiB, PART_SIZE, parseMediaKey, partCount, sniffMediaType, thumbKeyFor } from "@/lib/media/rules";
 
 const uuid = "0b0a6c1e-0d6e-4c1f-9d0e-2a2f5e7c9b11";
 
 describe("parseMediaKey", () => {
   it("accepts keys the upload route creates", () => {
-    expect(parseMediaKey(`products/${uuid}.webp`)).toEqual({ folder: "products", type: "image/webp" });
-    expect(parseMediaKey(`video/${uuid}.mp4`)).toEqual({ folder: "video", type: "video/mp4" });
+    expect(parseMediaKey(`products/${uuid}.webp`)).toEqual({ folder: "products", type: "image/webp", isThumb: false });
+    expect(parseMediaKey(`video/${uuid}.mp4`)).toEqual({ folder: "video", type: "video/mp4", isThumb: false });
   });
 
   it.each([
@@ -41,5 +41,19 @@ describe("partCount", () => {
     expect(partCount(PART_SIZE)).toBe(1);
     expect(partCount(PART_SIZE + 1)).toBe(2);
     expect(partCount(200 * MiB)).toBe(20);
+  });
+});
+
+describe("thumbnails", () => {
+  it("accepts thumbnail keys for images only", () => {
+    expect(parseMediaKey(`products/${uuid}-thumb.webp`)).toEqual({ folder: "products", type: "image/webp", isThumb: true });
+    expect(parseMediaKey(`video/${uuid}-thumb.mp4`)).toBeNull();
+  });
+
+  it("derives the thumbnail key in the same format", () => {
+    expect(thumbKeyFor(`products/${uuid}.jpg`)).toBe(`products/${uuid}-thumb.jpg`);
+    expect(thumbKeyFor(`reviews/${uuid}.png`)).toBe(`reviews/${uuid}-thumb.png`);
+    expect(thumbKeyFor(`video/${uuid}.mp4`)).toBeNull();
+    expect(thumbKeyFor(`products/${uuid}-thumb.jpg`)).toBeNull();
   });
 });

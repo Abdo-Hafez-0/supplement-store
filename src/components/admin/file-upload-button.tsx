@@ -2,11 +2,13 @@
 
 import { useId, useRef, useState } from "react";
 import { buttonClass } from "@/components/ui/button";
-import { folderRules } from "@/lib/media/rules";
+import { folderRules, MiB } from "@/lib/media/rules";
 import type { MediaFolder } from "@/lib/validation/admin";
-import { uploadFile } from "./upload-client";
+import { uploadFile, uploadImage } from "./upload-client";
 
-/** Picks files, uploads each to R2 and reports the new keys. */
+const MAX_ORIGINAL_IMAGE_BYTES = 25 * MiB;
+
+/** Picks files, uploads each to R2 (images resized first) and reports the new keys. */
 export function FileUploadButton({
   folder,
   label,
@@ -25,6 +27,7 @@ export function FileUploadButton({
   const [progress, setProgress] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const rules = folderRules[folder];
+  const allowed = folder === "video" ? rules.label : "JPEG, PNG or WebP, up to 25 MB (resized automatically)";
 
   async function onChange(files: FileList | null) {
     if (!files?.length) return;
@@ -32,14 +35,16 @@ export function FileUploadButton({
     const list = [...files];
     try {
       for (const [index, file] of list.entries()) {
-        if (!rules.types.includes(file.type as (typeof rules.types)[number]) || file.size > rules.maxBytes) {
-          throw new Error(`${file.name}: allowed files are ${rules.label}.`);
+        const isImageFolder = folder !== "video";
+        // Images are resized in the browser first, so larger originals are fine.
+        const maxOriginal = isImageFolder ? MAX_ORIGINAL_IMAGE_BYTES : rules.maxBytes;
+        if (!rules.types.includes(file.type as (typeof rules.types)[number]) || file.size > maxOriginal) {
+          throw new Error(`${file.name}: allowed files are ${allowed}.`);
         }
         const prefix = list.length > 1 ? `${index + 1}/${list.length} ` : "";
-        setProgress(`${prefix}Uploading…`);
-        const key = await uploadFile(file, folder, (fraction) =>
-          setProgress(`${prefix}Uploading ${Math.round(fraction * 100)}%`),
-        );
+        setProgress(`${prefix}${isImageFolder ? "Preparing…" : "Uploading…"}`);
+        const report = (fraction: number) => setProgress(`${prefix}Uploading ${Math.round(fraction * 100)}%`);
+        const key = isImageFolder ? await uploadImage(file, folder, report) : await uploadFile(file, folder, report);
         await onUploaded(key, file);
       }
     } catch (err) {
@@ -68,7 +73,7 @@ export function FileUploadButton({
         disabled={disabled || progress !== null}
         onChange={(event) => onChange(event.currentTarget.files)}
       />
-      <p className="text-xs text-muted">{rules.label}</p>
+      <p className="text-xs text-muted">{allowed}</p>
       {error && (
         <p role="alert" className="text-xs text-danger">
           {error}
