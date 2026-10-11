@@ -145,6 +145,38 @@ async function main() {
       sortOrder: 1,
     });
 
+    // Sample storefront content (replaces any local values for these groups)
+    const sampleSettings: Record<string, unknown> = {
+      home: {
+        heroTitle: `${SAMPLE} Supplements that keep up with you`,
+        heroText: "Sample intro text. Bundle savings and a free gift on multi-bottle orders.",
+        aboutTitle: "About us",
+        aboutText: "Sample about text.\n\nReplace it in Admin > Settings > Home page.",
+        faq: [
+          { question: `${SAMPLE} How fast is shipping?`, answer: "Sample answer: orders ship within 1-2 business days." },
+          { question: `${SAMPLE} Can I return a product?`, answer: "Sample answer: yes, within 30 days." },
+        ],
+        contactEmail: "support@example.test",
+        contactPhone: "(555) 010-0000",
+        contactAddress: "",
+        contactHours: "Mon-Fri, 9am-5pm ET",
+      },
+      storefront: {
+        announcementText: `${SAMPLE} Free shipping on every order this week`,
+        promoBannerText: `${SAMPLE} Buy more, save more + free gift`,
+        giftBadgeText: "FREE GIFT",
+        freeShippingText: "Free shipping on every order",
+        trustBadges: ["Secure checkout", "30-day guarantee", "Made in the USA"],
+      },
+      timer: { enabled: true, durationMinutes: 15, expiryBehavior: "regular_price_then_restart", regularPriceHours: 24 },
+    };
+    for (const [key, value] of Object.entries(sampleSettings)) {
+      await db
+        .insert(schema.settings)
+        .values({ key, value })
+        .onConflictDoUpdate({ target: schema.settings.key, set: { value } });
+    }
+
     const count = (await db.select({ id: products.id }).from(products)).length;
     console.log(`Seeded sample data. Products in local D1: ${count}`);
   } finally {

@@ -6,8 +6,8 @@ import type { FormState } from "@/components/admin/form-state";
 import { fieldError, FormMessage, SubmitButton } from "@/components/admin/form-status";
 import { useFormAction } from "@/components/admin/use-form-action";
 import { Button } from "@/components/ui/button";
-import { Checkbox, Field, Input, Select } from "@/components/ui/field";
-import type { Settings } from "@/lib/settings/schema";
+import { Checkbox, Field, Input, Select, Textarea } from "@/components/ui/field";
+import { MAX_FAQ_ITEMS, type Settings } from "@/lib/settings/schema";
 
 type Action = (prev: FormState, formData: FormData) => Promise<FormState>;
 
@@ -21,6 +21,127 @@ function SettingsForm({ action, children }: { action: Action; children: (state: 
         <FormMessage state={state} />
       </div>
     </form>
+  );
+}
+
+type FaqRow = { id: number; question: string; answer: string };
+let nextFaqId = 0;
+
+export function HomeContentForm({ value, action }: { value: Settings["home"]; action: Action }) {
+  const [faq, setFaq] = useState<FaqRow[]>(() => value.faq.map((item) => ({ id: nextFaqId++, ...item })));
+  const update = (id: number, patch: Partial<FaqRow>) =>
+    setFaq((rows) => rows.map((row) => (row.id === id ? { ...row, ...patch } : row)));
+  const move = (index: number, by: number) =>
+    setFaq((rows) => {
+      const next = [...rows];
+      const [row] = next.splice(index, 1);
+      next.splice(index + by, 0, row);
+      return next;
+    });
+
+  return (
+    <SettingsForm action={action}>
+      {(state) => (
+        <>
+          <input
+            type="hidden"
+            name="faq"
+            value={JSON.stringify(faq.map(({ question, answer }) => ({ question, answer })))}
+          />
+          <Field label="Headline" htmlFor="heroTitle" error={fieldError(state, "heroTitle")}>
+            <Input id="heroTitle" name="heroTitle" maxLength={120} defaultValue={value.heroTitle} />
+          </Field>
+          <Field label="Intro text" htmlFor="heroText" error={fieldError(state, "heroText")}>
+            <Textarea id="heroText" name="heroText" maxLength={400} rows={2} defaultValue={value.heroText} />
+          </Field>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Field label="About title" htmlFor="aboutTitle" error={fieldError(state, "aboutTitle")}>
+              <Input id="aboutTitle" name="aboutTitle" maxLength={120} defaultValue={value.aboutTitle} />
+            </Field>
+            <Field
+              label="About text"
+              htmlFor="aboutText"
+              hint="Empty hides the section. Blank lines start a new paragraph."
+              error={fieldError(state, "aboutText")}
+              className="md:col-span-2"
+            >
+              <Textarea id="aboutText" name="aboutText" maxLength={3000} rows={5} defaultValue={value.aboutText} />
+            </Field>
+          </div>
+
+          <fieldset className="flex flex-col gap-3">
+            <legend className="mb-2 text-sm font-medium">
+              FAQ ({faq.length}/{MAX_FAQ_ITEMS})
+            </legend>
+            {faq.map((row, index) => (
+              <div key={row.id} className="flex flex-col gap-2 rounded-md border border-border p-3">
+                <Input
+                  aria-label={`Question ${index + 1}`}
+                  placeholder="Question"
+                  maxLength={200}
+                  required
+                  value={row.question}
+                  onChange={(event) => update(row.id, { question: event.currentTarget.value })}
+                />
+                <Textarea
+                  aria-label={`Answer ${index + 1}`}
+                  placeholder="Answer"
+                  maxLength={2000}
+                  rows={3}
+                  required
+                  value={row.answer}
+                  onChange={(event) => update(row.id, { answer: event.currentTarget.value })}
+                />
+                <div className="flex gap-1">
+                  <Button size="sm" variant="ghost" disabled={index === 0} onClick={() => move(index, -1)}>
+                    Move up
+                  </Button>
+                  <Button size="sm" variant="ghost" disabled={index === faq.length - 1} onClick={() => move(index, 1)}>
+                    Move down
+                  </Button>
+                  <Button size="sm" variant="danger" onClick={() => setFaq((rows) => rows.filter((r) => r.id !== row.id))}>
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ))}
+            <div>
+              <Button
+                size="sm"
+                variant="secondary"
+                disabled={faq.length >= MAX_FAQ_ITEMS}
+                onClick={() => setFaq((rows) => [...rows, { id: nextFaqId++, question: "", answer: "" }])}
+              >
+                Add question
+              </Button>
+            </div>
+            {fieldError(state, "faq") && <p className="text-xs text-danger">{fieldError(state, "faq")}</p>}
+          </fieldset>
+
+          <fieldset className="grid gap-4 md:grid-cols-2">
+            <legend className="mb-2 text-sm font-medium">Footer contacts (empty fields are hidden)</legend>
+            <Field label="Email" htmlFor="contactEmail" error={fieldError(state, "contactEmail")}>
+              <Input id="contactEmail" name="contactEmail" type="email" maxLength={254} defaultValue={value.contactEmail} />
+            </Field>
+            <Field label="Phone" htmlFor="contactPhone" error={fieldError(state, "contactPhone")}>
+              <Input id="contactPhone" name="contactPhone" maxLength={40} defaultValue={value.contactPhone} />
+            </Field>
+            <Field label="Address" htmlFor="contactAddress" error={fieldError(state, "contactAddress")}>
+              <Input id="contactAddress" name="contactAddress" maxLength={300} defaultValue={value.contactAddress} />
+            </Field>
+            <Field label="Support hours" htmlFor="contactHours" error={fieldError(state, "contactHours")}>
+              <Input
+                id="contactHours"
+                name="contactHours"
+                maxLength={120}
+                defaultValue={value.contactHours}
+                placeholder="Mon-Fri, 9am-5pm ET"
+              />
+            </Field>
+          </fieldset>
+        </>
+      )}
+    </SettingsForm>
   );
 }
 

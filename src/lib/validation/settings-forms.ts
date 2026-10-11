@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { timerExpiryBehaviors, type Settings, type SettingsKey } from "@/lib/settings/schema";
+import { homeContentSchema, timerExpiryBehaviors, type Settings, type SettingsKey } from "@/lib/settings/schema";
 import { checkbox, intString, optionalIntString } from "./admin";
 
 // Form fields (strings) -> typed settings values. The stored value is validated
@@ -7,7 +7,31 @@ import { checkbox, intString, optionalIntString } from "./admin";
 
 const text = (max: number) => z.string().trim().max(max).default("");
 
+const json = z.string().transform((value, ctx) => {
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    ctx.addIssue({ code: "custom", message: "Could not read the list. Reload the page and try again." });
+    return z.NEVER;
+  }
+});
+
 export const settingsFormSchemas = {
+  home: z.strictObject({
+    heroTitle: text(120),
+    heroText: text(400),
+    aboutTitle: text(120),
+    aboutText: text(3000),
+    faq: json.pipe(homeContentSchema.shape.faq),
+    contactEmail: z
+      .string()
+      .trim()
+      .default("")
+      .pipe(z.union([z.literal(""), z.email("Enter a valid email, or leave empty").max(254)])),
+    contactPhone: text(40),
+    contactAddress: text(300),
+    contactHours: text(120),
+  }),
   storefront: z
     .strictObject({
       announcementText: text(200),
@@ -45,6 +69,17 @@ export const settingsFormSchemas = {
 } satisfies { [K in SettingsKey]: z.ZodType<Settings[K], unknown> };
 
 export const settingsFormFields: { [K in SettingsKey]: string[] } = {
+  home: [
+    "heroTitle",
+    "heroText",
+    "aboutTitle",
+    "aboutText",
+    "faq",
+    "contactEmail",
+    "contactPhone",
+    "contactAddress",
+    "contactHours",
+  ],
   storefront: [
     "announcementText",
     "promoBannerText",

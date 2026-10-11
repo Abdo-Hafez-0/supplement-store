@@ -46,7 +46,30 @@ export const limitsSchema = z.strictObject({
   maxQuantityPerLine: z.number().int().min(1).max(999).nullable(),
 });
 
+export const MAX_FAQ_ITEMS = 12;
+
+export const homeContentSchema = z.strictObject({
+  heroTitle: z.string().trim().max(120),
+  heroText: z.string().trim().max(400),
+  aboutTitle: z.string().trim().max(120),
+  aboutText: z.string().trim().max(3000),
+  faq: z
+    .array(
+      z.strictObject({
+        question: z.string().trim().min(1).max(200),
+        answer: z.string().trim().min(1).max(2000),
+      }),
+    )
+    .max(MAX_FAQ_ITEMS),
+  /** Footer contacts; empty fields are hidden */
+  contactEmail: z.union([z.literal(""), z.email().max(254)]),
+  contactPhone: z.string().trim().max(40),
+  contactAddress: z.string().trim().max(300),
+  contactHours: z.string().trim().max(120),
+});
+
 export const settingsSchemas = {
+  home: homeContentSchema,
   storefront: storefrontTextsSchema,
   timer: timerSchema,
   video: videoSchema,
@@ -58,6 +81,17 @@ export type SettingsKey = keyof typeof settingsSchemas;
 export type Settings = { [K in SettingsKey]: z.infer<(typeof settingsSchemas)[K]> };
 
 export const defaultSettings: Settings = {
+  home: {
+    heroTitle: "Supplements that keep up with you",
+    heroText: "Quality formulas, bundle savings and free gifts on multi-bottle orders.",
+    aboutTitle: "About us",
+    aboutText: "",
+    faq: [],
+    contactEmail: "",
+    contactPhone: "",
+    contactAddress: "",
+    contactHours: "",
+  },
   storefront: {
     announcementText: "",
     promoBannerText: "",

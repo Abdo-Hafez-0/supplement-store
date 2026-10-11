@@ -4,7 +4,7 @@ import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/db/client";
 import { getSettings } from "@/lib/settings";
 import { saveSettingsGroup } from "./actions";
-import { ChatForm, LimitsForm, StorefrontTextsForm, TimerForm, VideoForm } from "./settings-forms";
+import { ChatForm, HomeContentForm, LimitsForm, StorefrontTextsForm, TimerForm, VideoForm } from "./settings-forms";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -15,6 +15,10 @@ export default async function SettingsPage() {
   return (
     <>
       <h1 className="text-2xl font-semibold">Settings</h1>
+
+      <Card title="Home page" description="Headline, about section, FAQ and the contacts shown in the footer.">
+        <HomeContentForm value={settings.home} action={saveSettingsGroup.bind(null, "home")} />
+      </Card>
 
       <Card title="Banners and badges">
         <StorefrontTextsForm value={settings.storefront} action={saveSettingsGroup.bind(null, "storefront")} />

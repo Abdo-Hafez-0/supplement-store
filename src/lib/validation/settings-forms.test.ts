@@ -51,3 +51,23 @@ describe("settings form schemas", () => {
     expect(settingsFormSchemas.limits.safeParse({ maxQuantityPerLine: "0" }).success).toBe(false);
   });
 });
+
+describe("home content form", () => {
+  const base = { heroTitle: "Hi", faq: "[]", contactEmail: "" };
+
+  it("parses the FAQ list and allows an empty email", () => {
+    const value = settingsFormSchemas.home.parse({
+      ...base,
+      faq: JSON.stringify([{ question: "Shipping?", answer: "Free in the US." }]),
+    });
+    expect(value.faq).toEqual([{ question: "Shipping?", answer: "Free in the US." }]);
+    expect(value.contactEmail).toBe("");
+  });
+
+  it("rejects empty FAQ answers, bad JSON and bad emails", () => {
+    const emptyAnswer = JSON.stringify([{ question: "Q", answer: "" }]);
+    expect(settingsFormSchemas.home.safeParse({ ...base, faq: emptyAnswer }).success).toBe(false);
+    expect(settingsFormSchemas.home.safeParse({ ...base, faq: "{" }).success).toBe(false);
+    expect(settingsFormSchemas.home.safeParse({ ...base, contactEmail: "not-an-email" }).success).toBe(false);
+  });
+});
