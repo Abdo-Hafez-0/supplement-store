@@ -168,8 +168,8 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
 
 - [x] M0 Setup — repo, Next.js, Tailwind, D1 + Drizzle, R2, Better Auth, deploy to workers.dev
 - [x] M1 Admin — login, products with tiers/gifts/bump/images, settings, shipping methods
-- [ ] M2 Storefront — home, listing, product page (tiers, banner, gift preview, timer, video, reviews)
-- [ ] M3 Cart — pricing engine, server cart, gift sync, slide-out drawer
+- [x] M2 Storefront — home, listing, product page (tiers, banner, gift preview, timer, video, reviews)
+- [x] M3 Cart — pricing engine, server cart, gift sync, slide-out drawer
 - [ ] M4 Checkout and orders — checkout, order bump, PayPal sandbox, webhook, orders, stock, emails
 - [ ] M5 Finish — Meta Pixel + CAPI, chat loader, speed pass, full test run
 
