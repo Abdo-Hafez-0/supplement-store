@@ -157,6 +157,9 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
   default, and note the assumption in the milestone summary.
 - Stop and ask before anything that needs the developer's accounts or money: Cloudflare,
   GitHub, PayPal, Resend, Meta, or a paid plan.
+- Keep `docs/client-guide.md` current: whenever a feature the client can use or see is added
+  or changed, update the relevant section (plain language, exact button and field names
+  from the UI) and add a row to its "What's new" table in the same change.
 - Stay on the Cloudflare free plan as long as possible (10 ms CPU per request nominal limit,
   3 MB compressed Worker). Keep per-request CPU low: cache what can be cached, avoid heavy
   libraries and work that repeats on every request.

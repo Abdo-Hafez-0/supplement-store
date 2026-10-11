@@ -1,7 +1,8 @@
 # Supplement Store
 
 Custom e-commerce store (Next.js on Cloudflare Workers, D1, R2, Better Auth, PayPal).
-See `CLAUDE.md` for the stack, rules and milestones.
+See `CLAUDE.md` for the stack, rules and milestones, and
+[docs/client-guide.md](docs/client-guide.md) for how to use the store (written for the client).
 
 Prototype: https://supplement-store.abdohafez731.workers.dev (health check at `/health`).
 
