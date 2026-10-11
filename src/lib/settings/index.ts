@@ -1,5 +1,7 @@
 import "server-only";
 import { inArray } from "drizzle-orm";
+import { cache } from "react";
+import { getDb } from "@/lib/db/client";
 import type { Db } from "@/lib/db/client";
 import { settings } from "@/lib/db/schema";
 import { defaultSettings, settingsSchemas, type Settings, type SettingsKey } from "./schema";
@@ -27,3 +29,6 @@ export async function saveSetting(db: Db, key: SettingsKey, value: unknown) {
     .values({ key, value: data })
     .onConflictDoUpdate({ target: settings.key, set: { value: data, updatedAt: new Date() } });
 }
+
+/** Settings for the current request, read once and shared by layouts and pages. */
+export const getRequestSettings = cache(() => getSettings(getDb()));
