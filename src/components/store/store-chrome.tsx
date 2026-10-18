@@ -53,6 +53,9 @@ export function StoreFooter({ home }: { home: Settings["home"] }) {
             <Link href="/#faq" className="hover:text-inverse-foreground">
               FAQ
             </Link>
+            <Link href="/orders" className="hover:text-inverse-foreground">
+              Track your order
+            </Link>
           </nav>
         </div>
         {contacts.length > 0 && (
