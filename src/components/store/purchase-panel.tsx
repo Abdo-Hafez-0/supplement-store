@@ -1,15 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useCart } from "./cart-context";
+import { Badge } from "@/components/ui/badge";
+import { buttonClass } from "@/components/ui/button";
 import { cn } from "@/components/ui/cn";
+import { GiftIcon, MinusIcon, PlusIcon } from "@/components/ui/icons";
 import type { StoreTier } from "@/lib/db/queries/storefront";
 import { formatCents } from "@/lib/money";
 import { MediaImage } from "./media-image";
 
 /**
  * Tier cards (or a quantity picker for products without tiers) and the gift preview.
- * Prices shown here are for display only; the server prices the cart (M3).
+ * Prices shown here are for display only; the server prices the cart.
  */
 export function PurchasePanel({
   productId,
@@ -39,12 +42,51 @@ export function PurchasePanel({
   const [adding, setAdding] = useState(false);
   // The cart is priced by the server from the real quantity; the card only picks it.
   const bottles = selected ? selected.bottles : quantity;
+  const displayTotal = selected
+    ? offerActive
+      ? selected.bundlePriceCents
+      : selected.compareAtCents
+    : regularPriceCents * quantity;
+  const disabled = outOfStock || adding || pending || (selected !== null && selected.bottles > stock);
+
+  // On phones, a bar with the Add to cart button stays at the bottom once the main button scrolls away.
+  const mainButton = useRef<HTMLButtonElement>(null);
+  const [showStickyBar, setShowStickyBar] = useState(false);
+  useEffect(() => {
+    const el = mainButton.current;
+    if (!el) return;
+    // Shown once the button is above the sticky header (h-16), which covers it first;
+    // hidden again at the very bottom so it doesn't cover the footer's disclaimer.
+    const headerPx = 64;
+    let frame = 0;
+    const check = () => {
+      frame = 0;
+      const atEnd = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 120;
+      setShowStickyBar(el.getBoundingClientRect().bottom < headerPx && !atEnd);
+    };
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(check);
+    };
+    check();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  async function addToCart() {
+    setAdding(true);
+    await add(productId, bottles);
+    setAdding(false);
+  }
+  const label = outOfStock ? "Out of stock" : adding ? "Adding…" : "Add to cart";
 
   return (
     <div className="flex flex-col gap-4">
       {tiers.length > 0 ? (
         <fieldset className="flex flex-col gap-3">
-          <legend className="mb-2 text-sm font-medium">Choose your bundle</legend>
+          <legend className="mb-2 font-heading text-base font-semibold">Choose your bundle</legend>
           {tiers.map((tier) => {
             const price = offerActive ? tier.bundlePriceCents : tier.compareAtCents;
             const showSavings = offerActive && tier.savingsCents > 0;
@@ -54,8 +96,9 @@ export function PurchasePanel({
               <label
                 key={tier.id}
                 className={cn(
-                  "relative flex cursor-pointer items-center gap-3 rounded-lg border-2 bg-surface p-4 transition",
-                  isSelected ? "border-accent" : "border-border hover:border-muted",
+                  "relative flex cursor-pointer items-center gap-3 rounded-lg border-2 p-4 transition has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-accent",
+                  isSelected ? "border-accent bg-accent-soft shadow-card" : "border-border bg-surface hover:border-muted",
+                  tier.badgeLabel && "mt-2",
                   unavailable && "cursor-not-allowed opacity-60",
                 )}
               >
@@ -66,40 +109,46 @@ export function PurchasePanel({
                   checked={isSelected}
                   disabled={unavailable}
                   onChange={() => setSelectedId(tier.id)}
-                  className="size-4 shrink-0 accent-accent"
+                  className="peer sr-only"
                 />
-                <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                {/* Custom radio dot */}
+                <span
+                  aria-hidden
+                  className={cn(
+                    "flex size-5 shrink-0 items-center justify-center rounded-full border-2",
+                    isSelected ? "border-accent" : "border-border",
+                  )}
+                >
+                  {isSelected && <span className="size-2.5 rounded-full bg-accent" />}
+                </span>
+                {tier.badgeLabel && (
+                  <Badge tone="accent" className="absolute -top-3 right-3 uppercase tracking-wide">
+                    {tier.badgeLabel}
+                  </Badge>
+                )}
+                <span className="flex min-w-0 flex-1 flex-col gap-1">
                   <span className="flex flex-wrap items-center gap-2">
-                    <span className="font-semibold">
+                    <span className="font-heading font-semibold">
                       {tier.bottles} {tier.bottles === 1 ? "bottle" : "bottles"}
                     </span>
-                    {tier.badgeLabel && (
-                      <span className="rounded-full bg-accent px-2 py-0.5 text-xs font-medium text-accent-foreground">
-                        {tier.badgeLabel}
-                      </span>
-                    )}
-                    {tier.gift && giftBadgeText && (
-                      <span className="rounded-full bg-success px-2 py-0.5 text-xs font-medium text-white">
-                        {giftBadgeText}
-                      </span>
-                    )}
+                    {tier.gift && giftBadgeText && <Badge tone="gift">{giftBadgeText}</Badge>}
                   </span>
                   {offerActive && tier.bottles > 1 && (
                     <span className="text-xs text-muted">{formatCents(tier.perBottleCents)} per bottle</span>
                   )}
                   {tier.gift && (
-                    <span className="text-xs font-medium text-success">
-                      + {tier.gift.quantity} free {tier.gift.title}
+                    <span className="flex items-center gap-1 text-xs font-semibold text-highlight-text">
+                      <GiftIcon className="size-4" />+ {tier.gift.quantity} free {tier.gift.title}
                     </span>
                   )}
                   {unavailable && <span className="text-xs text-danger">Not enough stock</span>}
                 </span>
-                <span className="flex flex-col items-end">
-                  <span className="font-semibold tabular-nums">{formatCents(price)}</span>
+                <span className="flex flex-col items-end gap-0.5">
+                  <span className="text-lg font-bold tabular-nums">{formatCents(price)}</span>
                   {showSavings && (
                     <>
                       <s className="text-xs text-muted tabular-nums">{formatCents(tier.compareAtCents)}</s>
-                      <span className="text-xs font-medium text-success">Save {tier.savingsPercent}%</span>
+                      <Badge tone="highlight">Save {tier.savingsPercent}%</Badge>
                     </>
                   )}
                 </span>
@@ -109,20 +158,20 @@ export function PurchasePanel({
         </fieldset>
       ) : (
         <div className="flex flex-col gap-3">
-          <p className="text-2xl font-semibold tabular-nums">{formatCents(regularPriceCents)}</p>
+          <p className="text-3xl font-bold text-accent tabular-nums">{formatCents(regularPriceCents)}</p>
           <div className="flex items-center gap-3">
-            <label htmlFor="quantity" className="text-sm font-medium">
+            <label htmlFor="quantity" className="text-sm font-semibold">
               Quantity
             </label>
             <div className="flex items-center rounded-md border border-border bg-surface">
               <button
                 type="button"
                 aria-label="Decrease quantity"
-                className="px-3 py-2 disabled:opacity-40"
+                className="p-3 disabled:opacity-40"
                 disabled={quantity <= 1}
                 onClick={() => setQuantity((q) => Math.max(1, q - 1))}
               >
-                −
+                <MinusIcon className="size-4" />
               </button>
               <input
                 id="quantity"
@@ -132,16 +181,16 @@ export function PurchasePanel({
                   const next = Number(event.currentTarget.value.replace(/\D/g, ""));
                   setQuantity(Math.min(quantityCap, Math.max(1, next || 1)));
                 }}
-                className="w-12 bg-transparent text-center tabular-nums"
+                className="w-10 bg-transparent text-center font-semibold tabular-nums"
               />
               <button
                 type="button"
                 aria-label="Increase quantity"
-                className="px-3 py-2 disabled:opacity-40"
+                className="p-3 disabled:opacity-40"
                 disabled={quantity >= quantityCap}
                 onClick={() => setQuantity((q) => Math.min(quantityCap, q + 1))}
               >
-                +
+                <PlusIcon className="size-4" />
               </button>
             </div>
           </div>
@@ -149,34 +198,63 @@ export function PurchasePanel({
       )}
 
       {selected?.gift && (
-        <div className="flex items-center gap-3 rounded-lg border border-success bg-surface p-3">
-          <div className="size-14 shrink-0 overflow-hidden rounded-md bg-surface-muted">
-            {selected.gift.image && <MediaImage fileKey={selected.gift.image} alt="" sizes="56px" />}
+        <div className="flex items-center gap-3 rounded-lg border border-highlight bg-highlight-soft p-3">
+          <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-md bg-surface">
+            {selected.gift.image ? (
+              <MediaImage fileKey={selected.gift.image} alt="" sizes="56px" />
+            ) : (
+              <GiftIcon className="size-6 text-highlight-text" />
+            )}
           </div>
           <p className="text-sm">
-            <span className="font-semibold">Free gift:</span> {selected.gift.quantity} × {selected.gift.title}, added to
-            your order automatically.
+            <span className="font-bold text-highlight-text">Free gift: </span>
+            {selected.gift.quantity} × {selected.gift.title}, added to your order automatically.
           </p>
         </div>
       )}
 
       <button
+        ref={mainButton}
         type="button"
-        disabled={outOfStock || adding || pending || (selected !== null && selected.bottles > stock)}
-        onClick={async () => {
-          setAdding(true);
-          await add(productId, bottles);
-          setAdding(false);
-        }}
-        className="rounded-md bg-accent px-6 py-3 font-semibold text-accent-foreground disabled:cursor-not-allowed disabled:opacity-60"
+        disabled={disabled}
+        onClick={addToCart}
+        className={cn(buttonClass("primary", "lg"), "w-full")}
       >
-        {outOfStock ? "Out of stock" : adding ? "Adding…" : "Add to cart"}
+        {label}
+        {!outOfStock && !adding && <span className="font-normal opacity-80">· {formatCents(displayTotal)}</span>}
       </button>
       {error && !adding && (
         <p role="alert" className="-mt-2 text-center text-sm text-danger">
           {error}
         </p>
       )}
+
+      <div
+        className={cn(
+          "fixed inset-x-0 bottom-0 z-10 border-t border-border bg-surface/95 px-gutter pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-raised backdrop-blur transition md:hidden",
+          showStickyBar ? "translate-y-0" : "pointer-events-none translate-y-full",
+        )}
+        aria-hidden={!showStickyBar}
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex flex-col">
+            <span className="text-xs text-muted">
+              {bottles} {bottles === 1 ? "bottle" : "bottles"}
+              {selected?.gift ? ` + ${selected.gift.quantity} free ${selected.gift.quantity === 1 ? "gift" : "gifts"}` : ""}
+            </span>
+            <span className="font-bold tabular-nums">{formatCents(displayTotal)}</span>
+          </div>
+          <button
+            type="button"
+            tabIndex={showStickyBar ? 0 : -1}
+            disabled={disabled}
+            onClick={addToCart}
+            className={cn(buttonClass("primary", "lg"), "flex-1")}
+          >
+            {label}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }

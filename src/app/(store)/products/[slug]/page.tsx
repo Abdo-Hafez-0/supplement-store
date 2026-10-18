@@ -5,6 +5,8 @@ import { OfferTimer } from "@/components/store/offer-timer";
 import { ProductGallery } from "@/components/store/product-gallery";
 import { PurchasePanel } from "@/components/store/purchase-panel";
 import { ReviewCarousel } from "@/components/store/review-carousel";
+import { TrustBadges } from "@/components/store/trust-badges";
+import { TruckIcon } from "@/components/ui/icons";
 import { getDb } from "@/lib/db/client";
 import { getStoreProduct } from "@/lib/db/queries/storefront";
 import { formatCents } from "@/lib/money";
@@ -43,14 +45,16 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
 
   return (
     <>
-      {banner && <div className="bg-surface-muted px-gutter py-2 text-center text-sm font-medium">{banner}</div>}
+      {banner && (
+        <div className="bg-highlight px-gutter py-2 text-center text-sm font-bold text-highlight-foreground">{banner}</div>
+      )}
 
       <div className="mx-auto grid w-full max-w-page gap-6 px-gutter py-6 md:grid-cols-2 md:gap-10 md:py-10">
         <ProductGallery images={product.images} title={product.title} />
 
         <div className="flex flex-col gap-5">
           <div className="flex flex-col gap-2">
-            <h1 className="font-heading text-2xl font-semibold sm:text-3xl">{product.title}</h1>
+            <h1 className="font-heading text-2xl leading-tight font-bold sm:text-4xl">{product.title}</h1>
             {product.shortDescription && <p className="text-muted">{product.shortDescription}</p>}
             {tiers.length > 0 && active && (
               <p className="text-sm text-muted">
@@ -72,17 +76,19 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
           />
 
           {storefront.freeShippingText && (
-            <p className="flex items-center gap-2 rounded-md bg-surface-muted px-4 py-3 text-sm">
-              <span aria-hidden>🚚</span>
+            <p className="flex items-center gap-3 rounded-lg bg-accent-soft px-4 py-3 text-sm font-medium text-accent">
+              <TruckIcon />
               {storefront.freeShippingText}
             </p>
           )}
+
+          <TrustBadges badges={storefront.trustBadges} className="sm:justify-start" />
         </div>
       </div>
 
       {descriptionParagraphs.length > 0 && (
-        <section aria-labelledby="description" className="mx-auto w-full max-w-page px-gutter py-6">
-          <h2 id="description" className="mb-3 font-heading text-xl font-semibold">
+        <section aria-labelledby="description" className="mx-auto w-full max-w-page px-gutter py-8">
+          <h2 id="description" className="mb-4 font-heading text-2xl font-bold">
             Description
           </h2>
           <div className="flex max-w-prose flex-col gap-3 text-muted">
@@ -96,8 +102,8 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
       )}
 
       {video.fileKey && (
-        <section aria-labelledby="video" className="mx-auto w-full max-w-page px-gutter py-6">
-          <h2 id="video" className="mb-3 font-heading text-xl font-semibold">
+        <section aria-labelledby="video" className="mx-auto w-full max-w-page px-gutter py-8">
+          <h2 id="video" className="mb-4 font-heading text-2xl font-bold">
             {video.title || "How to use"}
           </h2>
           <video
@@ -105,14 +111,14 @@ export default async function ProductPage({ params }: PageProps<"/products/[slug
             controls
             playsInline
             preload="metadata"
-            className="aspect-video w-full max-w-3xl rounded-lg border border-border bg-black"
+            className="aspect-video w-full max-w-3xl rounded-lg bg-black shadow-card"
           />
         </section>
       )}
 
       {reviews.length > 0 && (
-        <section aria-labelledby="reviews" className="mx-auto w-full max-w-page px-gutter py-6">
-          <h2 id="reviews" className="mb-3 font-heading text-xl font-semibold">
+        <section aria-labelledby="reviews" className="mx-auto w-full max-w-page px-gutter py-8">
+          <h2 id="reviews" className="mb-4 font-heading text-2xl font-bold">
             What customers say
           </h2>
           <ReviewCarousel reviews={reviews} />

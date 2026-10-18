@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ClockIcon } from "@/components/ui/icons";
 import type { TimerState } from "@/lib/timer";
 
 type Remote = TimerState & { now: number };
@@ -72,21 +73,32 @@ export function OfferTimer({ initial }: { initial: TimerState }) {
 
   if (state.phase === "expired") {
     return (
-      <div role="status" className="rounded-md border border-border bg-surface-muted px-4 py-3 text-sm">
+      <div role="status" className="flex items-center gap-3 rounded-lg bg-surface-muted px-4 py-3 text-sm text-muted">
+        <ClockIcon />
         This offer has ended. Regular prices apply for now; check back later for the next offer.
       </div>
     );
   }
 
+  const parts = (remaining === null ? "--:--" : format(remaining)).split(":");
   return (
     <div
       role="timer"
       aria-live="off"
-      className="flex items-center justify-between gap-3 rounded-md border border-warning bg-surface px-4 py-3 text-sm"
+      aria-label={`Bundle prices end in ${parts.join(":")}`}
+      className="flex items-center justify-between gap-3 rounded-lg bg-inverse px-4 py-3 text-inverse-foreground"
     >
-      <span className="font-medium">Bundle prices end in</span>
-      <span className="font-mono text-lg font-semibold tabular-nums">
-        {remaining === null ? "--:--" : format(remaining)}
+      <span className="flex items-center gap-2 text-sm font-semibold">
+        <ClockIcon className="size-5 text-highlight" />
+        Bundle prices end in
+      </span>
+      <span aria-hidden className="flex items-center gap-1 font-heading text-lg font-bold tabular-nums">
+        {parts.map((part, index) => (
+          <span key={index} className="flex items-center gap-1">
+            {index > 0 && <span className="text-highlight">:</span>}
+            <span className="min-w-9 rounded-sm bg-inverse-border px-1.5 py-0.5 text-center">{part}</span>
+          </span>
+        ))}
       </span>
     </div>
   );

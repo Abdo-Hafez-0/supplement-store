@@ -9,8 +9,11 @@ export const metadata: Metadata = { title: "Shop all products" };
 export default async function ProductsPage() {
   const products = await listStoreProducts(getDb());
   return (
-    <section className="mx-auto w-full max-w-page px-gutter py-8">
-      <h1 className="mb-6 font-heading text-3xl font-semibold">All products</h1>
+    <section className="mx-auto w-full max-w-page px-gutter py-8 sm:py-12">
+      <div className="mb-6 flex flex-col gap-2">
+        <span aria-hidden className="h-1 w-12 rounded-full bg-highlight" />
+        <h1 className="font-heading text-3xl font-bold sm:text-4xl">All products</h1>
+      </div>
       {products.length ? (
         <ProductGrid products={products} />
       ) : (
