@@ -126,7 +126,7 @@ function LineItem({ line }: { line: PricedLine }) {
 }
 
 /** The order bump: one checkbox offer, priced by the server. */
-function BumpOffer({ bump }: { bump: PricedBump }) {
+export function BumpOffer({ bump }: { bump: PricedBump }) {
   const { setBump, pending } = useCart();
   return (
     <label className="flex cursor-pointer items-center gap-3 rounded-lg border-2 border-dashed border-highlight bg-highlight-soft p-3 has-checked:border-solid has-checked:border-accent has-checked:bg-accent-soft">
@@ -239,10 +239,14 @@ export function CartDrawer() {
               <span className="tabular-nums">{formatCents(cart.subtotalCents)}</span>
             </p>
             <p className="text-xs text-muted">Shipping is chosen at checkout.</p>
-            <button type="button" disabled className={cn(buttonClass("primary", "lg"), "w-full")}>
+            <Link
+              href="/checkout"
+              onClick={close}
+              aria-disabled={pending}
+              className={cn(buttonClass("primary", "lg"), "w-full", pending && "pointer-events-none opacity-60")}
+            >
               Checkout
-            </button>
-            <p className="-mt-1 text-center text-xs text-muted">Prototype: checkout arrives in the next milestone.</p>
+            </Link>
           </footer>
         )}
       </div>

@@ -18,6 +18,8 @@ type CartState = {
   remove: (lineId: number) => Promise<void>;
   /** Accept or decline the order bump on offer */
   setBump: (accept: boolean) => Promise<void>;
+  /** Reload the cart from the server (e.g. after an order emptied it) */
+  refresh: () => Promise<void>;
   freeShippingText: string;
 };
 
@@ -106,6 +108,9 @@ export function CartProvider({ children, freeShippingText }: { children: ReactNo
       },
       setBump: async (accept) => {
         await run(() => request("/api/cart/bump", { method: "PUT", body: JSON.stringify({ accept }) }));
+      },
+      refresh: async () => {
+        await run(() => request("/api/cart"));
       },
       freeShippingText,
     }),
