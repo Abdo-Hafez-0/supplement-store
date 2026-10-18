@@ -4,7 +4,15 @@ import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/db/client";
 import { getSettings } from "@/lib/settings";
 import { saveSettingsGroup } from "./actions";
-import { ChatForm, HomeContentForm, LimitsForm, StorefrontTextsForm, TimerForm, VideoForm } from "./settings-forms";
+import {
+  ChatForm,
+  HomeContentForm,
+  LimitsForm,
+  NotificationsForm,
+  StorefrontTextsForm,
+  TimerForm,
+  VideoForm,
+} from "./settings-forms";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -33,6 +41,10 @@ export default async function SettingsPage() {
 
       <Card title="How-to video" description="One video shared by all product pages.">
         <VideoForm value={settings.video} action={saveSettingsGroup.bind(null, "video")} />
+      </Card>
+
+      <Card title="Order notifications">
+        <NotificationsForm value={settings.notifications} action={saveSettingsGroup.bind(null, "notifications")} />
       </Card>
 
       <Card title="Cart limits">

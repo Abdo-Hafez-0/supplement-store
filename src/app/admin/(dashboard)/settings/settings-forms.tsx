@@ -270,6 +270,23 @@ export function ChatForm({ value, action }: { value: Settings["chat"]; action: A
   );
 }
 
+export function NotificationsForm({ value, action }: { value: Settings["notifications"]; action: Action }) {
+  return (
+    <SettingsForm action={action}>
+      {(state) => (
+        <Field
+          label="New-order notification email"
+          htmlFor="newOrderEmail"
+          hint="Gets an email for every paid order. Leave empty to turn the alert off."
+          error={fieldError(state, "newOrderEmail")}
+        >
+          <Input id="newOrderEmail" name="newOrderEmail" type="email" maxLength={254} defaultValue={value.newOrderEmail} />
+        </Field>
+      )}
+    </SettingsForm>
+  );
+}
+
 export function LimitsForm({ value, action }: { value: Settings["limits"]; action: Action }) {
   return (
     <SettingsForm action={action}>

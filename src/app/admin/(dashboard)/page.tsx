@@ -5,20 +5,22 @@ import { buttonClass } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth";
 import { getDb } from "@/lib/db/client";
-import { products, shippingMethods } from "@/lib/db/schema";
+import { orders, products, shippingMethods } from "@/lib/db/schema";
 
 export const metadata: Metadata = { title: "Overview" };
 
 export default async function AdminOverviewPage() {
   await requireAdmin();
   const db = getDb();
-  const [byStatus, [shipping]] = await Promise.all([
+  const [byStatus, [shipping], [toShip]] = await Promise.all([
     db.select({ status: products.status, value: count() }).from(products).groupBy(products.status),
     db.select({ value: count() }).from(shippingMethods).where(eq(shippingMethods.isActive, true)),
+    db.select({ value: count() }).from(orders).where(eq(orders.status, "paid")),
   ]);
   const total = (status: string) => byStatus.find((row) => row.status === status)?.value ?? 0;
 
-  const stats = [
+  const stats: { label: string; value: number; href?: string }[] = [
+    { label: "Orders to ship", value: toShip?.value ?? 0, href: "/admin/orders" },
     { label: "Active products", value: total("active") },
     { label: "Unlisted (gifts, bumps)", value: total("unlisted") },
     { label: "Drafts", value: total("draft") },
@@ -33,10 +35,18 @@ export default async function AdminOverviewPage() {
           Add product
         </Link>
       </div>
-      <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-3 md:grid-cols-5">
         {stats.map((stat) => (
-          <div key={stat.label} className="rounded-lg border border-border bg-surface p-4">
-            <dt className="text-sm text-muted">{stat.label}</dt>
+          <div key={stat.label} className="relative rounded-lg border border-border bg-surface p-4">
+            <dt className="text-sm text-muted">
+              {stat.href ? (
+                <Link href={stat.href} className="after:absolute after:inset-0 hover:underline">
+                  {stat.label}
+                </Link>
+              ) : (
+                stat.label
+              )}
+            </dt>
             <dd className="mt-1 text-2xl font-semibold">{stat.value}</dd>
           </div>
         ))}

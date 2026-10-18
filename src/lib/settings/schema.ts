@@ -52,6 +52,11 @@ export const limitsSchema = z.strictObject({
   maxQuantityPerLine: z.number().int().min(1).max(999).nullable(),
 });
 
+export const notificationsSchema = z.strictObject({
+  /** Where the new-order alert goes; empty = no alert */
+  newOrderEmail: z.union([z.literal(""), z.email().max(254)]).default(""),
+});
+
 export const MAX_FAQ_ITEMS = 12;
 
 export const homeContentSchema = z.strictObject({
@@ -81,6 +86,7 @@ export const settingsSchemas = {
   video: videoSchema,
   chat: chatSchema,
   limits: limitsSchema,
+  notifications: notificationsSchema,
 } as const;
 
 export type SettingsKey = keyof typeof settingsSchemas;
@@ -115,4 +121,5 @@ export const defaultSettings: Settings = {
   video: { fileKey: null, title: "How to use" },
   chat: { chatId: "" },
   limits: { maxQuantityPerLine: null },
+  notifications: { newOrderEmail: "" },
 };

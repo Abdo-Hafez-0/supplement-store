@@ -67,6 +67,14 @@ export const settingsFormSchemas = {
     }),
   chat: z.strictObject({ chatId: text(100) }),
   limits: z.strictObject({ maxQuantityPerLine: optionalIntString(1, 999) }),
+  notifications: z.strictObject({
+    newOrderEmail: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .default("")
+      .pipe(z.union([z.literal(""), z.email("Enter a valid email, or leave empty").max(254)])),
+  }),
 } satisfies { [K in SettingsKey]: z.ZodType<Settings[K], unknown> };
 
 export const settingsFormFields: { [K in SettingsKey]: string[] } = {
@@ -96,4 +104,5 @@ export const settingsFormFields: { [K in SettingsKey]: string[] } = {
   video: ["fileKey", "title"],
   chat: ["chatId"],
   limits: ["maxQuantityPerLine"],
+  notifications: ["newOrderEmail"],
 };
