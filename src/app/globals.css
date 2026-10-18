@@ -1,35 +1,62 @@
 @import "tailwindcss";
 
 /*
- * Design tokens. Phase 2 applies the brand by editing this block only;
- * components use the Tailwind utilities mapped below (bg-surface, text-muted,
- * rounded-md, p-gutter ...) and never hard-code colors, fonts, radii or spacing.
- * Neutral placeholder palette for the prototype.
+ * Design tokens. The brand is applied by editing this block only; components use the
+ * Tailwind utilities mapped below (bg-surface, text-muted, bg-highlight, rounded-md,
+ * p-gutter ...) and never hard-code colors, fonts, radii or spacing.
+ *
+ * Brand: DRIVEX. Green #123F36 and gold #C49A44 come from the logo (design/).
+ * Text/background pairs below meet WCAG AA (4.5:1). Gold is too light for text on
+ * white: use highlight-text for gold-colored text and highlight only as a fill.
  */
 :root {
-  /* Colors */
-  --background: oklch(0.985 0 0);
-  --surface: oklch(1 0 0);
-  --surface-muted: oklch(0.965 0 0);
-  --border: oklch(0.9 0 0);
-  --text: oklch(0.21 0 0);
-  --muted: oklch(0.5 0 0);
-  --accent: oklch(0.27 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --success: oklch(0.55 0.13 150);
-  --warning: oklch(0.7 0.15 75);
-  --danger: oklch(0.55 0.2 27);
+  /* Page and surfaces */
+  --background: #f7f6f1; /* warm off-white */
+  --surface: #ffffff;
+  --surface-muted: #f0eee6;
+  --border: #e2dfd5;
+  --text: #16211e;
+  --muted: #5b6863;
 
-  /* Fonts (next/font sets --font-geist-*) */
-  --font-family-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-family-heading: var(--font-family-sans);
-  --font-family-mono: var(--font-geist-mono), ui-monospace, monospace;
+  /* Brand green: buttons, links, selected states */
+  --accent: #123f36;
+  --accent-hover: #0b2e27;
+  --accent-foreground: #ffffff;
+  --accent-soft: #e6efeb; /* tint for selected cards and callouts */
+
+  /* Brand gold: savings, badges, gifts, timer */
+  --highlight: #c49a44;
+  --highlight-foreground: #123f36; /* text on a gold fill */
+  --highlight-soft: #f7efdc; /* tint for gift and offer boxes */
+  --highlight-text: #84621f; /* gold-colored text on light backgrounds */
+
+  /* Inverse sections (header bar, hero, footer, timer): green background */
+  --inverse: #123f36;
+  --inverse-foreground: #ffffff;
+  --inverse-muted: #c3d3cd;
+  --inverse-border: #2a5a50;
+
+  /* Status */
+  --success: #1d7048;
+  --success-foreground: #ffffff;
+  --warning: #9a5b0b;
+  --danger: #b42318;
+
+  /* Fonts (next/font sets --font-poppins and --font-inter) */
+  --font-family-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-family-heading: var(--font-poppins), var(--font-family-sans);
+  --font-family-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
 
   /* Radius */
-  --radius-small: 0.25rem;
-  --radius-medium: 0.5rem;
-  --radius-large: 0.75rem;
+  --radius-small: 0.375rem;
+  --radius-medium: 0.625rem;
+  --radius-large: 1rem;
+  --radius-xlarge: 1.5rem;
   --radius-pill: 9999px;
+
+  /* Shadows */
+  --elevation-card: 0 1px 2px rgb(18 63 54 / 0.06), 0 1px 3px rgb(18 63 54 / 0.08);
+  --elevation-raised: 0 8px 24px rgb(18 63 54 / 0.12), 0 2px 6px rgb(18 63 54 / 0.08);
 
   /* Spacing: base unit for p-4, gap-2 ... plus named layout spacing */
   --space-unit: 0.25rem;
@@ -50,8 +77,19 @@
   --color-text: var(--text);
   --color-muted: var(--muted);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
   --color-accent-foreground: var(--accent-foreground);
+  --color-accent-soft: var(--accent-soft);
+  --color-highlight: var(--highlight);
+  --color-highlight-foreground: var(--highlight-foreground);
+  --color-highlight-soft: var(--highlight-soft);
+  --color-highlight-text: var(--highlight-text);
+  --color-inverse: var(--inverse);
+  --color-inverse-foreground: var(--inverse-foreground);
+  --color-inverse-muted: var(--inverse-muted);
+  --color-inverse-border: var(--inverse-border);
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
 
@@ -62,7 +100,11 @@
   --radius-sm: var(--radius-small);
   --radius-md: var(--radius-medium);
   --radius-lg: var(--radius-large);
+  --radius-xl: var(--radius-xlarge);
   --radius-full: var(--radius-pill);
+
+  --shadow-card: var(--elevation-card);
+  --shadow-raised: var(--elevation-raised);
 
   --spacing: var(--space-unit);
   --spacing-gutter: var(--space-gutter);
@@ -75,11 +117,18 @@
     background-color: var(--background);
     color: var(--text);
     font-family: var(--font-family-sans);
+    -webkit-tap-highlight-color: transparent;
   }
 
   h1,
   h2,
   h3 {
     font-family: var(--font-family-heading);
+    letter-spacing: -0.01em;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
   }
 }
