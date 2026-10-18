@@ -8,8 +8,9 @@ the end lists every update.
 - **Admin dashboard:** https://supplement-store.abdohafez731.workers.dev/admin
 
 > **This is the prototype.** It now uses the DRIVEX logo and brand colors (deep green and
-> gold). Your own domain comes after you approve it. Payments aren't switched on yet, so
-> nobody can place a real order. Checkout arrives in the next update.
+> gold). Your own domain comes after you approve it. The checkout page is ready, but
+> payments aren't switched on yet, so nobody can place a real order. PayPal, card, Google Pay
+> and order emails arrive in the next update.
 
 ---
 
@@ -24,8 +25,8 @@ after 5 wrong attempts from the same connection. Wait and try again if you see
 
 Select **Sign out** at the top right when you're done, especially on a shared computer.
 
-The menu at the top has four sections: **Overview**, **Products**, **Shipping** and
-**Settings**.
+The menu at the top has five sections: **Overview**, **Orders**, **Products**, **Shipping**
+and **Settings**.
 
 ---
 
@@ -40,8 +41,8 @@ Some things depend on others, so set up the store in this order:
 3. At least one **shipping method**.
 4. **Settings:** home page text, banners, timer, how-to video.
 
-The **Overview** page shows how many products are Active, Unlisted and Draft, and how many
-shipping methods are active.
+The **Overview** page shows how many orders are waiting to be shipped (**Orders to ship**),
+how many products are Active, Unlisted and Draft, and how many shipping methods are active.
 
 ---
 
@@ -126,8 +127,8 @@ Each product can have one.
 
 Select **Save order bump**, or **Remove bump** to delete it.
 
-Shoppers see the bump as a **checkbox offer at the bottom of the cart panel** (and later at
-checkout). Ticking it adds one of the offered product at the bump price; unticking removes it.
+Shoppers see the bump as a **checkbox offer at the bottom of the cart panel** (and in the
+**Shipping method** step at checkout). Ticking it adds one of the offered product at the bump price; unticking removes it.
 Only one bump shows at a time: if the cart holds several products with bumps, the bump of the
 product with the highest total in the cart is shown. If that product leaves the cart, the bump
 goes with it. The offer is hidden while the offered product is out of stock or set to Draft.
@@ -152,7 +153,42 @@ deleted. The message tells you where it's used. Change those first, or set the p
 
 ---
 
-## 4. Shipping
+## 4. Orders
+
+Go to **Orders**. Every order gets an order number like **DX-7K3M9QX2**; customers use it to
+look up their order.
+
+The tabs at the top filter the list:
+
+| Tab | Shows |
+| --- | --- |
+| **To ship** | Paid orders that haven't been shipped yet. Start here every day. |
+| **All paid** | Every paid order: to ship, shipped and refunded. |
+| **Unpaid** | Checkouts where the customer didn't finish paying (no stock was taken). |
+| **Everything** | All of the above. |
+
+Select an order to open it. You'll see the items with the **price at purchase** (later price
+changes never change past orders), free gifts and the order bump, the totals, the shipping
+address, the customer's email and phone, and the PayPal reference.
+
+**Shipping an order:** in the **Fulfillment** box, set **Status** to **Shipped**, type the
+**Tracking number**, and select **Save**. The customer sees the status and tracking number on
+their order page.
+
+**Refunds:** make the refund in your PayPal account first, then set the order's **Status** to
+**Refunded** here and select **Save**. Marking an order refunded doesn't put the bottles
+back in stock; change the product's stock yourself if the bottles come back.
+
+**Stock:** stock goes down automatically for every bottle in a paid order, including free
+gifts and the order bump. Unpaid checkouts never take stock.
+
+At the bottom of an order, **Preview the customer's confirmation email** and **Preview your
+new-order alert** show the two emails as they'll look. They're sent automatically once
+payments are switched on in the next update.
+
+---
+
+## 5. Shipping
 
 Go to **Shipping**. Shoppers will choose from the active methods at checkout.
 
@@ -169,7 +205,7 @@ Use **Add shipping method** for a new one, **Save** to update one, **Delete** to
 
 ---
 
-## 5. Settings
+## 6. Settings
 
 Go to **Settings**. Each box has its own **Save** button.
 
@@ -189,8 +225,8 @@ Go to **Settings**. Each box has its own **Save** button.
 - **Gift badge**: the small label on tier cards that include a gift, e.g. "FREE GIFT".
 - **Free-shipping callout**: shown on product pages and in the cart.
 - **Checkout trust badges**: up to 4 short reassurances, e.g. "Secure checkout". Shown with
-  a shield icon under the home page banner and under **Add to cart** on product pages, and at
-  checkout once it's added. Empty hides them.
+  a shield icon under the home page banner and under **Add to cart** on product pages, and
+  at the bottom of the checkout page. Empty hides them.
 
 ### Countdown timer
 - **Show the countdown timer on product pages**: turns it on or off.
@@ -208,6 +244,10 @@ Go to **Settings**. Each box has its own **Save** button.
 One video shown on **every** product page. Select **Upload video** (MP4, up to 200 MB), add a
 **Section title**, then **Save**. **Replace video** swaps it, **Remove video** takes it off.
 
+### Order notifications
+**New-order notification email**: the address that gets an email for every paid order. Leave
+it empty to turn the alert off. (Emails start with the next update.)
+
 ### Cart limits
 **Maximum quantity per product in the cart**: leave empty for no limit.
 
@@ -217,7 +257,7 @@ update.
 
 ---
 
-## 6. What shoppers see
+## 7. What shoppers see
 
 ### Look and feel
 The store uses the DRIVEX logo (in the header, the footer and the browser tab icon) and two
@@ -262,9 +302,32 @@ Adding to cart opens the cart panel from the side, where shoppers can:
 If something changes while a product sits in the cart, the cart corrects itself and says
 so. For example: stock runs low, a product is set to Draft, or your cart limit is lower.
 
+### Checkout (`/checkout`)
+**Checkout** in the cart panel opens the checkout page. Shoppers fill in four steps:
+
+1. **Contact**: email and phone number (both required; US phone numbers only).
+2. **Shipping address**: full name, street address, apartment (optional), city, state and
+   ZIP code. You ship within the United States only.
+3. **Shipping method**: your active methods with their prices ("Free" when the order reaches
+   the method's free-over amount), and the **order bump** checkbox offer.
+4. **Payment**: **Continue to payment** checks every field and confirms the total. For now
+   it then says online payment opens soon. The PayPal, card and Google Pay buttons appear
+   here in the next update.
+
+The **order summary** (items, free gifts, savings, subtotal, shipping and total) is at the top
+on phones (tap it to open) and on the right on computers. Your trust badges show at the bottom.
+The store prices everything again on its side, so a shopper can't change a price from their
+browser.
+
+### Order confirmation and order lookup
+After paying, shoppers see a **Thank you for your order!** page with the order number, status,
+items, totals and address. **Track your order** in the footer (`/orders`) lets them find an
+order later with their email and order number. To protect customers' details, an order page
+only opens in the browser that placed the order, or after entering the matching email.
+
 ---
 
-## 7. Try it yourself: demo checklist
+## 8. Try it yourself: demo checklist
 
 Use these to see every feature in action. Use a phone for the shopper side.
 
@@ -288,14 +351,17 @@ Use these to see every feature in action. Use a phone for the shopper side.
    bump price; untick it to remove it.
 9. **Banners and FAQ:** fill in the announcement bar, promo banner and a few FAQ questions,
    and check them on the store.
+10. **Checkout:** with products in the cart, select **Checkout**. Select **Continue to
+    payment** with the fields empty to see the checks, then fill them in. Tick and untick the
+    order bump and watch the total change. Paying arrives in the next update.
 
 ---
 
-## 8. Coming next
+## 9. Coming next
 
-- **Checkout and orders:** checkout form, payment with card, PayPal,
-  Apple Pay and Google Pay (in test mode first), order confirmation page, stock reduced on
-  payment, order emails, and an orders list in the admin.
+- **Payments and emails:** PayPal, card and Google Pay at checkout (in test mode first; Apple
+  Pay after your domain is connected), the customer's confirmation email and your new-order
+  alert.
 - **Finishing:** Meta Pixel tracking, live chat, speed improvements and a full test run.
 - **After approval:** your own domain and live payments.
 
@@ -305,6 +371,7 @@ Use these to see every feature in action. Use a phone for the shopper side.
 
 | Date | Update | What was added |
 | --- | --- | --- |
+| 2026-10-18 | Checkout and orders (part 1) | Checkout page with contact, US address, shipping method, order bump and summary; order confirmation page; order lookup (**Track your order**); **Orders** in the admin with shipping status, tracking number and refunds; **Order notifications** setting; email previews. Payments come next. |
 | 2026-10-18 | DRIVEX design | The store now uses the DRIVEX logo, green and gold colors and new fonts, with a redesigned home page, product cards, product page, cart and admin login. Trust badges now also show on the home page and product pages. On phones, an Add to cart bar stays at the bottom of product pages. |
 | 2026-10-11 | Order bump in the cart | The order bump now shows as a checkbox offer in the cart panel. |
 | 2026-10-11 | Cart | Add to cart, the cart panel, automatic gifts in the cart, quantity changes with live re-pricing. |

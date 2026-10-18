@@ -61,8 +61,10 @@ src/
     db/               Drizzle schema, client, queries
     pricing/          the pricing engine: priceCart() and tier/gift helpers (pure, fully unit-tested)
     cart/             server cart: cookie, catalog loading, re-pricing and gift-line sync
+    checkout/         checkout quote (server-priced totals + shipping), payments-connected check
+    orders/           order snapshot, createPendingOrder(), idempotent markOrderPaid(), access cookie
     paypal/           PayPal server client: create order, capture, verify webhook
-    email/            Resend client and React Email templates
+    email/            order email templates (plain HTML strings, no React Email); Resend sending in M4b
     auth/             Better Auth setup
     validation/       Zod schemas
     money/            cents <-> dollar-string helpers (no floats)
@@ -74,6 +76,7 @@ src/
     admin/            admin components
     ui/               shared primitives that read design tokens (Button, Badge, icons,
                       Logo: inline SVG paths in logo-paths.ts, converted from design/1.pdf)
+src/test/             test helpers: sqlite-db.ts = in-memory SQLite (node:sqlite) with all migrations
 drizzle/              generated migrations (committed)
 custom-worker.ts      Worker entry: serves /media/* from R2, everything else via OpenNext
 scripts/              local seed, admin bootstrap
@@ -175,6 +178,11 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
 - [x] M2 Storefront — home, listing, product page (tiers, banner, gift preview, timer, video, reviews)
 - [x] M3 Cart — pricing engine, server cart, gift sync, slide-out drawer
 - [ ] M4 Checkout and orders — checkout, order bump, PayPal sandbox, webhook, orders, stock, emails
+  - [x] M4a (no credentials needed): checkout form + quote, orders + idempotent paid/stock,
+        confirmation + lookup pages, admin orders, email templates. `/api/checkout/test-order`
+        places a paid order without PayPal, only while `NEXTJS_ENV=development` (local).
+  - [ ] M4b (waiting for the client's PayPal/Resend credentials): PayPal create/capture,
+        buttons + card fields, webhook, sending emails
 - [ ] M5 Finish — Meta Pixel + CAPI, chat loader, speed pass, full test run
 
 <!-- BEGIN:nextjs-agent-rules -->
