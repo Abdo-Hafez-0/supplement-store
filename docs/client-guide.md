@@ -7,9 +7,9 @@ the end lists every update.
 - **Store:** https://supplement-store.abdohafez731.workers.dev
 - **Admin dashboard:** https://supplement-store.abdohafez731.workers.dev/admin
 
-> **This is the prototype.** It uses a neutral design. Your logo, colors, fonts and own
-> domain come after you approve it. Payments aren't switched on yet, so nobody can place a
-> real order. Checkout arrives in the next update.
+> **This is the prototype.** It now uses the DRIVEX logo and brand colors (deep green and
+> gold). Your own domain comes after you approve it. Payments aren't switched on yet, so
+> nobody can place a real order. Checkout arrives in the next update.
 
 ---
 
@@ -188,8 +188,9 @@ Go to **Settings**. Each box has its own **Save** button.
   automatically hidden on products whose gifts are all out of stock.
 - **Gift badge**: the small label on tier cards that include a gift, e.g. "FREE GIFT".
 - **Free-shipping callout**: shown on product pages and in the cart.
-- **Checkout trust badges**: up to 4 short reassurances, e.g. "Secure checkout". Shown at
-  checkout once it's added.
+- **Checkout trust badges**: up to 4 short reassurances, e.g. "Secure checkout". Shown with
+  a shield icon under the home page banner and under **Add to cart** on product pages, and at
+  checkout once it's added. Empty hides them.
 
 ### Countdown timer
 - **Show the countdown timer on product pages**: turns it on or off.
@@ -218,32 +219,43 @@ update.
 
 ## 6. What shoppers see
 
+### Look and feel
+The store uses the DRIVEX logo (in the header, the footer and the browser tab icon) and two
+brand colors: **deep green** for buttons, the top bar, the home banner and the footer, and
+**gold** for savings, badges, free gifts and the countdown. Headings use the Poppins font
+(the same style as the logo) and body text uses Inter. Pages are designed for phones first.
+
 ### Home page
-Announcement bar, your headline with a **Shop all products** button, **Featured** products
-(or your first products if none are featured), **About us**, the **FAQ**, and the footer
-with your contacts and the standard supplement disclaimer.
+Announcement bar, then a green banner with your headline and a gold **Shop all products**
+button, your trust badges, **Featured** products (or your first products if none are
+featured), **About us**, the **FAQ** (tap a question to open its answer), and the green
+footer with your contacts and the standard supplement disclaimer.
 
 ### All products (`/products`)
-Every **Active** product, with its main image and the lowest price per bottle
-("From $31.66 / bottle", with the regular price struck through).
+Every **Active** product, with its main image, the lowest price per bottle ("From $31.66 /
+bottle", with the regular price struck through) and a gold **Save up to 37%** label showing
+the best bundle saving. Sold-out products show **Out of stock** instead.
 
 ### Product page
-1. Promo banner (and gift text when a gift is available).
+1. Promo banner in gold (and gift text when a gift is available).
 2. Image gallery: swipe on phones, or tap the small images.
 3. Title, short description and the regular price struck through.
-4. **Countdown timer**, when switched on.
-5. **Tier cards**: bundle price, price per bottle, the regular total struck through, % saved,
-   badge, gift badge, and which gift comes with it.
-6. **Gift preview** for the selected tier.
-7. **Add to cart**, then the free-shipping callout.
+4. **Countdown timer** in a green box, when switched on.
+5. **Tier cards**: bundle price, price per bottle, the regular total struck through, a gold
+   "Save %" label, your **Badge** (e.g. "Most popular") on the card's top edge, the gift
+   badge, and which gift comes with it. The selected card is outlined in green.
+6. **Gift preview** for the selected tier, in a gold box.
+7. **Add to cart**, showing the price of the selected bundle, then the free-shipping callout
+   and your trust badges. On phones, once shoppers scroll past the button, a bar with the
+   price and **Add to cart** stays at the bottom of the screen.
 8. Description, how-to video, and the review carousel (tap a review to see it full size).
 
 ### Cart
-The **Cart** button at the top shows how many bottles are in the cart (gifts included).
+The cart icon at the top shows how many bottles are in the cart (gifts included).
 Adding to cart opens the cart panel from the side, where shoppers can:
 - change quantities with **− / +** (prices and gifts update right away),
 - **Remove** a product (its gift goes with it),
-- see each gift under its product, marked **FREE GIFT**,
+- see each gift under its product in a gold box, marked **FREE GIFT**,
 - tick the **order bump** offer to add it (see 3.4),
 - see their savings and subtotal.
 
@@ -285,7 +297,7 @@ Use these to see every feature in action. Use a phone for the shopper side.
   Apple Pay and Google Pay (in test mode first), order confirmation page, stock reduced on
   payment, order emails, and an orders list in the admin.
 - **Finishing:** Meta Pixel tracking, live chat, speed improvements and a full test run.
-- **After approval:** your brand design, your own domain, and live payments.
+- **After approval:** your own domain and live payments.
 
 ---
 
@@ -293,6 +305,7 @@ Use these to see every feature in action. Use a phone for the shopper side.
 
 | Date | Update | What was added |
 | --- | --- | --- |
+| 2026-10-18 | DRIVEX design | The store now uses the DRIVEX logo, green and gold colors and new fonts, with a redesigned home page, product cards, product page, cart and admin login. Trust badges now also show on the home page and product pages. On phones, an Add to cart bar stays at the bottom of product pages. |
 | 2026-10-11 | Order bump in the cart | The order bump now shows as a checkbox offer in the cart panel. |
 | 2026-10-11 | Cart | Add to cart, the cart panel, automatic gifts in the cart, quantity changes with live re-pricing. |
 | 2026-10-11 | Storefront | Home page, product list, product page with tiers, gifts, timer, video and reviews; home page and banner settings; automatic photo resizing. |

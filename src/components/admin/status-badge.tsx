@@ -18,7 +18,7 @@ export function StatusBadge({ status }: { status: ProductStatus }) {
     <span
       className={cn(
         "inline-block rounded-full px-2 py-0.5 text-xs font-medium",
-        status === "active" && "bg-success text-white",
+        status === "active" && "bg-success text-success-foreground",
         status === "unlisted" && "bg-surface-muted text-text",
         status === "draft" && "border border-border text-muted",
       )}

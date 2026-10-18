@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { AdminNav } from "@/components/admin/admin-nav";
 import { Button } from "@/components/ui/button";
+import { Logo } from "@/components/ui/logo";
 import { requireAdmin } from "@/lib/auth";
 import { signOut } from "../actions";
 
@@ -20,7 +21,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex w-full max-w-page flex-wrap items-center justify-between gap-3 px-gutter py-3">
           <div className="flex flex-wrap items-center gap-4">
-            <span className="font-semibold">Store admin</span>
+            <span className="flex items-center gap-2 font-heading font-semibold">
+              <Logo variant="mark" className="h-6" />
+              Admin
+            </span>
             <AdminNav />
           </div>
           <form action={signOut} className="flex items-center gap-3">

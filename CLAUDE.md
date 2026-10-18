@@ -6,7 +6,8 @@ orders are all our own code. The client manages products, tiers, gifts, order bu
 shipping and banner texts from the admin dashboard.
 
 Current phase: **Phase 1, functional prototype**, deployed to a free `*.workers.dev`
-subdomain for client review. Brand identity and the custom domain come in Phase 2.
+subdomain for client review. The brand is **DRIVEX** and is already applied (logo, colors,
+fonts; source files in `design/`). The custom domain comes in Phase 2.
 
 ## Stack
 
@@ -71,7 +72,8 @@ src/
   components/
     store/            storefront components
     admin/            admin components
-    ui/               shared primitives that read design tokens
+    ui/               shared primitives that read design tokens (Button, Badge, icons,
+                      Logo: inline SVG paths in logo-paths.ts, converted from design/1.pdf)
 drizzle/              generated migrations (committed)
 custom-worker.ts      Worker entry: serves /media/* from R2, everything else via OpenNext
 scripts/              local seed, admin bootstrap
@@ -124,7 +126,9 @@ Better Auth's tables (incl. `rate_limit`). The full table list is in the product
    vars through Cloudflare bindings (`getCloudflareContext()` from the OpenNext adapter).
    Prefer libraries that work on the Workers runtime; check before adding one.
 10. **Colors, fonts, radii and spacing come from design tokens.** No hard-coded hex values
-    in components, so Phase 2 can apply the brand by editing tokens.
+    in components, so the brand can be changed by editing tokens. Brand green is `accent`
+    (buttons) and `inverse` (green sections); gold is `highlight` as a fill and
+    `highlight-text` for gold-colored text (gold itself is too light for text on white).
 
 ## Pricing engine behavior
 
