@@ -187,18 +187,27 @@ export const cartItems = sqliteTable(
 // Orders
 // ---------------------------------------------------------------------------
 
-export const orderStatuses = ["pending", "paid", "fulfilled", "cancelled", "refunded"] as const;
+/**
+ * pending = created at checkout, waiting for payment; paid = payment captured (stock
+ * reduced in the same write); shipped / refunded are set by the admin; cancelled =
+ * the payment was denied. Refunds themselves are made in the PayPal dashboard.
+ */
+export const orderStatuses = ["pending", "paid", "shipped", "refunded", "cancelled"] as const;
+export type OrderStatus = (typeof orderStatuses)[number];
 
 export const orders = sqliteTable(
   "orders",
   {
     id: integer("id").primaryKey({ autoIncrement: true }),
+    /** Public order number shown to the customer, e.g. "DX-7K3M9QX2" */
+    orderNumber: text("order_number").notNull(),
     /** Idempotency key for payments: one order per PayPal order. */
     paypalOrderId: text("paypal_order_id").notNull(),
     paypalCaptureId: text("paypal_capture_id"),
     status: text("status", { enum: orderStatuses }).notNull().default("pending"),
+    /** Stored lowercase */
     email: text("email").notNull(),
-    phone: text("phone"),
+    phone: text("phone").notNull(),
     shippingName: text("shipping_name").notNull(),
     shippingLine1: text("shipping_line1").notNull(),
     shippingLine2: text("shipping_line2"),
@@ -220,9 +229,13 @@ export const orders = sqliteTable(
     /** Cart the order came from; plain text (no FK) so carts can be purged. */
     cartId: text("cart_id"),
     paidAt: integer("paid_at", { mode: "timestamp" }),
+    trackingNumber: text("tracking_number"),
+    shippedAt: integer("shipped_at", { mode: "timestamp" }),
+    refundedAt: integer("refunded_at", { mode: "timestamp" }),
     ...timestamps,
   },
   (t) => [
+    uniqueIndex("orders_order_number_unique").on(t.orderNumber),
     uniqueIndex("orders_paypal_order_id_unique").on(t.paypalOrderId),
     index("orders_status_idx").on(t.status),
     index("orders_created_at_idx").on(t.createdAt),

@@ -2,6 +2,7 @@
 // out the phase, so a visitor can't extend the offer by editing the cookie.
 // M2 shows it on the product page; M3 uses the same phase to price the cart.
 
+import { hmacSign, safeEqual } from "@/lib/signing";
 import type { Settings } from "@/lib/settings/schema";
 
 export const TIMER_COOKIE = "offer_timer";
@@ -47,19 +48,7 @@ export function offerActive(state: TimerState) {
 
 // --- Signed cookie value: "<startedAtMs>.<hmac>" -----------------------------
 
-const encoder = new TextEncoder();
-
-async function hmac(secret: string, message: string) {
-  const key = await crypto.subtle.importKey(
-    "raw",
-    encoder.encode(`offer-timer:${secret}`),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const signature = new Uint8Array(await crypto.subtle.sign("HMAC", key, encoder.encode(message)));
-  return btoa(String.fromCharCode(...signature)).replaceAll("+", "-").replaceAll("/", "_").replace(/=+$/, "");
-}
+const hmac = (secret: string, message: string) => hmacSign("offer-timer", secret, message);
 
 export async function signTimerCookie(startedAt: number, secret: string) {
   return `${startedAt}.${await hmac(secret, String(startedAt))}`;
@@ -70,9 +59,5 @@ export async function readTimerCookie(value: string | undefined, secret: string)
   if (!value) return null;
   const match = /^(\d{13})\.([A-Za-z0-9_-]{43})$/.exec(value);
   if (!match) return null;
-  const expected = await hmac(secret, match[1]);
-  // Equal-length strings; compare without early exit
-  let diff = 0;
-  for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ match[2].charCodeAt(i);
-  return diff === 0 ? Number(match[1]) : null;
+  return safeEqual(await hmac(secret, match[1]), match[2]) ? Number(match[1]) : null;
 }
