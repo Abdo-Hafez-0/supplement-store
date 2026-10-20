@@ -285,7 +285,10 @@ the best bundle saving. Sold-out products show **Out of stock** instead.
    "Save %" label, your **Badge** (e.g. "Most popular") on the card's top edge, the gift
    badge, and which gift comes with it. The selected card is outlined in green.
 6. **Gift preview** for the selected tier, in a gold box.
-7. **Add to cart**, showing the price of the selected bundle, then the free-shipping callout
+7. **Add to cart**, showing the price of the selected bundle. Under it, a small link **or add
+   just 1 bottle** (with its price) adds a single bottle instead; it's hidden while the
+   1-bottle card is already selected. A single bottle gets the 1-bottle tier price if you
+   have one, otherwise the regular price, and no free gift. Then the free-shipping callout
    and your trust badges. On phones, once shoppers scroll past the button, a bar with the
    price and **Add to cart** stays at the bottom of the screen.
 8. Description, how-to video, and the review carousel (tap a review to see it full size).
@@ -371,6 +374,7 @@ Use these to see every feature in action. Use a phone for the shopper side.
 
 | Date | Update | What was added |
 | --- | --- | --- |
+| 2026-10-20 | One-bottle link | Product pages with tiers get an **or add just 1 bottle** link under **Add to cart**. |
 | 2026-10-18 | Checkout and orders (part 1) | Checkout page with contact, US address, shipping method, order bump and summary; order confirmation page; order lookup (**Track your order**); **Orders** in the admin with shipping status, tracking number and refunds; **Order notifications** setting; email previews. Payments come next. |
 | 2026-10-18 | DRIVEX design | The store now uses the DRIVEX logo, green and gold colors and new fonts, with a redesigned home page, product cards, product page, cart and admin login. Trust badges now also show on the home page and product pages. On phones, an Add to cart bar stays at the bottom of product pages. |
 | 2026-10-11 | Order bump in the cart | The order bump now shows as a checkbox offer in the cart panel. |

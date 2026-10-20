@@ -8,6 +8,7 @@ import { cn } from "@/components/ui/cn";
 import { GiftIcon, MinusIcon, PlusIcon } from "@/components/ui/icons";
 import type { StoreTier } from "@/lib/db/queries/storefront";
 import { formatCents } from "@/lib/money";
+import { priceForQuantity } from "@/lib/pricing/tiers";
 import { MediaImage } from "./media-image";
 
 /**
@@ -39,7 +40,8 @@ export function PurchasePanel({
   const outOfStock = stock <= 0;
   const quantityCap = Math.max(1, Math.min(stock, maxQuantity ?? 99));
   const { add, pending, error } = useCart();
-  const [adding, setAdding] = useState(false);
+  /** Which button is adding: the selected bundle, or the one-bottle link */
+  const [adding, setAdding] = useState<"selected" | "single" | null>(null);
   // The cart is priced by the server from the real quantity; the card only picks it.
   const bottles = selected ? selected.bottles : quantity;
   const displayTotal = selected
@@ -47,7 +49,11 @@ export function PurchasePanel({
       ? selected.bundlePriceCents
       : selected.compareAtCents
     : regularPriceCents * quantity;
-  const disabled = outOfStock || adding || pending || (selected !== null && selected.bottles > stock);
+  const disabled = outOfStock || adding !== null || pending || (selected !== null && selected.bottles > stock);
+  // "Or add just 1 bottle": offered while a bigger bundle is selected. Display only, priced
+  // like the cart engine prices 1 bottle (1-bottle tier, else regular; regular once the offer ends).
+  const showSingle = selected !== null && selected.bottles !== 1 && !outOfStock;
+  const singlePriceCents = priceForQuantity(offerActive ? tiers : [], regularPriceCents, 1);
 
   // On phones, a bar with the Add to cart button stays at the bottom once the main button scrolls away.
   const mainButton = useRef<HTMLButtonElement>(null);
@@ -75,12 +81,12 @@ export function PurchasePanel({
     };
   }, []);
 
-  async function addToCart() {
-    setAdding(true);
-    await add(productId, bottles);
-    setAdding(false);
+  async function addToCart(which: "selected" | "single" = "selected") {
+    setAdding(which);
+    await add(productId, which === "single" ? 1 : bottles);
+    setAdding(null);
   }
-  const label = outOfStock ? "Out of stock" : adding ? "Adding…" : "Add to cart";
+  const label = outOfStock ? "Out of stock" : adding === "selected" ? "Adding…" : "Add to cart";
 
   return (
     <div className="flex flex-col gap-4">
@@ -217,12 +223,25 @@ export function PurchasePanel({
         ref={mainButton}
         type="button"
         disabled={disabled}
-        onClick={addToCart}
+        onClick={() => addToCart()}
         className={cn(buttonClass("primary", "lg"), "w-full")}
       >
         {label}
-        {!outOfStock && !adding && <span className="font-normal opacity-80">· {formatCents(displayTotal)}</span>}
+        {!outOfStock && adding !== "selected" && (
+          <span className="font-normal opacity-80">· {formatCents(displayTotal)}</span>
+        )}
       </button>
+      {showSingle && (
+        <button
+          type="button"
+          // Still works when the selected bundle needs more bottles than are in stock
+          disabled={adding !== null || pending}
+          onClick={() => addToCart("single")}
+          className="-mt-2 self-center rounded-sm px-2 py-1 text-sm text-muted underline underline-offset-2 hover:text-accent disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {adding === "single" ? "Adding…" : `or add just 1 bottle · ${formatCents(singlePriceCents)}`}
+        </button>
+      )}
       {error && !adding && (
         <p role="alert" className="-mt-2 text-center text-sm text-danger">
           {error}
@@ -248,7 +267,7 @@ export function PurchasePanel({
             type="button"
             tabIndex={showStickyBar ? 0 : -1}
             disabled={disabled}
-            onClick={addToCart}
+            onClick={() => addToCart()}
             className={cn(buttonClass("primary", "lg"), "flex-1")}
           >
             {label}
